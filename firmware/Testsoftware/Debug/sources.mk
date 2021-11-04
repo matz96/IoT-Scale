@@ -24,4 +24,5 @@ Core/Src \
 Core/Startup \
 Drivers/STM32F0xx_HAL_Driver/Src \
 VCNL4040 \
+ssd1306 \
 

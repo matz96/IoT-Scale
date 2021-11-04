@@ -25,6 +25,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "vcnl4040.h"
+#include "ssd1306.h"
 
 /* USER CODE END Includes */
 
@@ -134,6 +135,7 @@ int main(void)
   uint16_t prox = 0;
   int32_t CH1_DC = 0;
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+  ssd1306_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -150,6 +152,8 @@ int main(void)
 	  pwm_value += step;
 	  user_pwm_setvalue(pwm_value);
 	  */
+	  char text[6] = "hello";
+	  ssd1306_WriteString(text, Font_6x8 , White);
 
 
 	  //Prescale of PWM: 1000 -> ~8kHz
