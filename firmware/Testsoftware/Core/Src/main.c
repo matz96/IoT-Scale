@@ -18,10 +18,13 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"m
+#include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <string.h>
+#include <stdio.h>
+#include "vcnl4040.h"
 
 /* USER CODE END Includes */
 
@@ -32,6 +35,27 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+
+#define LOWER true
+#define UPPER false
+
+#define VCNL4040_ALS_CONF 0x00
+#define VCNL4040_ALS_THDH 0x01
+#define VCNL4040_ALS_THDL 0x02
+#define VCNL4040_PS_CONF1 0x03 //Lower
+#define VCNL4040_PS_CONF2 0x03 //Upper
+#define VCNL4040_PS_CONF3 0x04 //Lower
+#define VCNL4040_PS_MS 0x04 //Upper
+#define VCNL4040_PS_CANC 0x05
+#define VCNL4040_PS_THDL 0x06
+#define VCNL4040_PS_THDH 0x07
+#define VCNL4040_PS_DATA 0x08
+#define VCNL4040_ALS_DATA 0x09
+#define VCNL4040_WHITE_DATA 0x0A
+#define VCNL4040_INT_FLAG 0x0B //Upper
+#define VCNL4040_ID 0x0C
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -42,10 +66,12 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc;
 
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
-
+const uint8_t VCNL4040_ADDR = 0x60; //7-bit unshifted I2C address of VCNL4040
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -53,7 +79,15 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
+void init_vcnl4040(void);
+void receive_data_vcnl4040(void);
+HAL_StatusTypeDef send_command_vcnl4040(uint8_t address, uint8_t command, uint16_t data);
+void user_pwm_setvalue(uint16_t value);
+bool writeCommand(uint8_t commandCode, uint16_t value);
+uint16_t readCommand(uint8_t commandCode);
+
 
 /* USER CODE END PFP */
 
@@ -92,14 +126,30 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC_Init();
   MX_TIM1_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  init_vcnl4040();
+  uint16_t pwm_value = 0;
+  uint16_t step = 0;
+  uint16_t prox = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  //HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, TMP102_ADDR, buf, 1, HAL_MAX_DELAY);
+
+	  //Testing duty cycle of PWM
+	  HAL_Delay(100);
+	  if(pwm_value == 0) step = 100;
+	  if(pwm_value == 2000) step = -100;
+	  pwm_value += step;
+	  user_pwm_setvalue(pwm_value);
+
+	  //get Proximity
+	  prox = getProximity();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -115,6 +165,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -138,6 +189,12 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C1;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
@@ -192,6 +249,52 @@ static void MX_ADC_Init(void)
   /* USER CODE BEGIN ADC_Init 2 */
 
   /* USER CODE END ADC_Init 2 */
+
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x0000020B;
+  hi2c1.Init.OwnAddress1 = 120;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -302,17 +405,86 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF0_SPI2;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB8 PB9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF1_I2C1;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
+void init_vcnl4040(void){
+	//if (getID() != 0x0186) return (false); //Check default ID value
+	setLEDCurrent(200); //Max IR LED current
+	setIRDutyCycle(40); //Set to highest duty cycle
+	setProxIntegrationTime(8); //Set to max integration
+	setProxResolution(16); //Set to 16-bit output
+	enableSmartPersistance(); //Turn on smart presistance
+	powerOnProximity(); //Turn on prox sensing
+
+	 //send_command_vcnl4040(VCNL4040_ADDR,VCNL4040_PS_CONF2,(0b00001011)<<8); //enable 16-bit PS
+	 //Default -> more to add for specific funcions
+}
+
+HAL_StatusTypeDef send_command_vcnl4040(uint8_t address, uint8_t command, uint16_t data){
+	static uint8_t buf[4];
+	buf[0] = address&0x01;
+	buf[1] = command;
+	buf[2] = data;
+	return(HAL_I2C_Master_Transmit(&hi2c1, address, buf ,4, HAL_MAX_DELAY));
+}
+
+
+uint16_t readCommand(uint8_t commandCode)
+{
+	uint8_t data;
+	HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &commandCode, 1, HAL_MAX_DELAY);
+
+   if (ret != HAL_OK) //Send a restart command. Do not release bus.
+    {
+      return (0); //Sensor did not ACK
+    }
+    ret = HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, &data, 2, HAL_MAX_DELAY);
+    if(ret == HAL_OK)
+    {
+    	return(data);
+    }
+     return (0); //Sensor did not respond
+}
+
+bool writeCommand(uint8_t commandCode, uint16_t value)
+{
+	uint8_t	LSB =  (value & 0xFF);
+	uint8_t MSB = (value >> 8);
+
+   HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &commandCode, 1, HAL_MAX_DELAY);
+   HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &LSB, 1, HAL_MAX_DELAY);
+   HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &MSB, 1, HAL_MAX_DELAY);
+   HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &commandCode, 1, HAL_MAX_DELAY);
+   if(ret != HAL_OK){
+	   return (false); //Sensor did not ACK
+   }
+   return true;
+}
+
+
+
+
+void read_data_vcnl4040(uint8_t address, uint8_t command){
+	//static uint8_t buf[3];
+	//buf[0] = address&0x01;
+	//buf[1] = command;
+	//buf[2] = address&0x01;
+	//HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, pData, 1, HAL_MAX_DELAY)
+}
+
+
+void user_pwm_setvalue(uint16_t value)
+{
+    TIM_OC_InitTypeDef sConfigOC;
+
+    sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    sConfigOC.Pulse = value;
+    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+}
 
 /* USER CODE END 4 */
 
