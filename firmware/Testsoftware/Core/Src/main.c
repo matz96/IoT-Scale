@@ -128,27 +128,47 @@ int main(void)
   MX_TIM1_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  init_vcnl4040();
+  //init_vcnl4040();
   uint16_t pwm_value = 0;
   uint16_t step = 0;
   uint16_t prox = 0;
+  int32_t CH1_DC = 0;
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, TMP102_ADDR, buf, 1, HAL_MAX_DELAY);
+	  //HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, 0xFF, 1, HAL_MAX_DELAY);
 
 	  //Testing duty cycle of PWM
+	  /*
 	  HAL_Delay(100);
 	  if(pwm_value == 0) step = 100;
 	  if(pwm_value == 2000) step = -100;
 	  pwm_value += step;
 	  user_pwm_setvalue(pwm_value);
+	  */
+
+
+	  //Prescale of PWM: 1000 -> ~8kHz
+	  while (CH1_DC < 1000)
+	        {
+	            TIM1->CCR4 = CH1_DC;
+	            CH1_DC += 70;
+	            HAL_Delay(100);
+	        }
+		while(CH1_DC > 0)
+		{
+			TIM1->CCR4 = CH1_DC;
+			CH1_DC -= 70;
+			HAL_Delay(100);
+		}
 
 	  //get Proximity
-	  prox = getProximity();
+	  /*prox = getProximity();
+	  HAL_Delay(200);*/
 
     /* USER CODE END WHILE */
 
@@ -310,6 +330,7 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
   TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
@@ -320,10 +341,19 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 0;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 65535;
+  htim1.Init.Period = 1000;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
-  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
   {
     Error_Handler();
@@ -476,14 +506,7 @@ void read_data_vcnl4040(uint8_t address, uint8_t command){
 
 void user_pwm_setvalue(uint16_t value)
 {
-    TIM_OC_InitTypeDef sConfigOC;
 
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = value;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
 }
 
 /* USER CODE END 4 */
