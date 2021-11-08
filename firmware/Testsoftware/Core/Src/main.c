@@ -130,9 +130,9 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   //init_vcnl4040();
-  uint16_t pwm_value = 3.3;
-  uint16_t step = 1;
-  uint16_t prox = 1;
+  //uint16_t pwm_value = 0;
+  //uint16_t step = 0;
+  //uint16_t prox = 0;
   int32_t CH1_DC = 0;
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
   ssd1306_Init();
