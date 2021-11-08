@@ -130,9 +130,9 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   //init_vcnl4040();
-  uint16_t pwm_value = 0;
-  uint16_t step = 0;
-  uint16_t prox = 0;
+  uint16_t pwm_value = 3.3;
+  uint16_t step = 1;
+  uint16_t prox = 1;
   int32_t CH1_DC = 0;
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
   ssd1306_Init();
@@ -292,8 +292,8 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x0000020B;
-  hi2c1.Init.OwnAddress1 = 120;
+  hi2c1.Init.Timing = 0x2000090E;
+  hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
