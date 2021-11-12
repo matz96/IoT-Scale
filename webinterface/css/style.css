@@ -1,0 +1,204 @@
+/*Hauptstruktur*/
+
+#container{
+  width: 900px;
+  padding:  0px 10px 10px 10px;
+  margin: auto;
+}
+#schrift{
+  height: 80px;
+  width: 240px;
+  background-image: url(../bilder/Schrift.png);
+  float: left;
+}
+#head{
+  align-items: center;
+  height: 394px;
+  width: 1750px;
+  scale: 0.25;
+  background-image: url(../img/fhnw_10mm.jpg);
+}
+#menuleiste{
+  color: black;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background-color: rgb(241, 226, 9);
+  height: 600px;
+  width: 200px;
+  float: left;
+
+
+  margin-top: 10px;
+  line-height: 150%;
+}
+#menuleiste a{
+  color: black;
+  text-decoration: none;
+}
+#menuleiste ul{
+  list-style: none;
+  padding-left: 10px;
+}
+#anzeige{
+  background-color: white;
+  height: 600px;
+  margin-left: 200px;
+}
+#seitentitel{
+  font-family: calibri arial;
+  font-size: 28px;
+  height = 20px;
+  font-weight: 600;
+  padding-top: 20px;
+  text-align: center;
+}
+#fusszeile{
+  margin-top: 10px;
+  padding-top: 5px;
+  text-align: center;
+  font-weight: bolder;
+  background-color: dodgerblue;
+  height: 25px;
+}
+p{
+  padding-left: 5px;
+  font-size: 15px;
+
+}
+h2{
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-left: 5px;
+}
+
+/*PBA6-Seite*/
+
+#version{
+  width: 300px;
+  height: 50px;
+  float: left;
+}
+#version table{
+
+  margin-top: 20px;
+  margin-left: 10px;
+  text-align: left;
+  width: 200px;
+}
+#microchip{
+  height: 50px;
+  width: 300px;
+  margin-left: 400px;
+  padding-top: 20px;
+}
+#pbatextlinks{
+  float: left;
+  width: 350px;
+  height: 180px;
+}
+#pbatextlinks table{
+  margin-left: 5px;
+  text-align: left;
+  width: 250px;
+}
+#pbatextrechts{
+  margin-left: 350px;
+  width: 350px;
+  height: 180px;
+}
+#pbatextrechts table{
+  margin-left: 5px;
+  text-align: left;
+  width: 300px;
+}
+#pbatable{
+  width: 700px;
+}
+#pbatable ul{
+  list-style: none;
+  padding-left: 10px;
+}
+#pbatable button{
+  border-color: dodgerblue;
+  background: dodgerblue;
+  color: white;
+  height = 30px;
+  width = 60px;
+  margin-right: 5px;
+  float: left;
+}
+#pbatable a{
+  text-decoration: none;
+  color: white;
+}
+#lcd button{
+  border-color: dodgerblue;
+  background: dodgerblue;
+  color: white;
+  height = 30px;
+  width = 60px;
+  margin-left: 10px;
+  margin-right: 5px;
+}
+#lcd textarea{
+  resize: none;
+  margin-left: 5px;
+  float: left;
+}
+
+/*Wettersation-Seite*/
+
+#wetterstationbild{
+  text-align: center;
+  height: 220px;
+}
+#wetterstationdaten{
+  margin-left: 200px;
+  text-align: left;
+}
+#wetterstationdaten table{
+  width: 300px;;
+}
+
+
+/*Kontaktseite*/
+#kontakt{
+  text-align: left;
+  line-height: 15px;
+  width: 400px;
+  margin-left: 5px;
+}
+#kontakt h3{
+  height: 10px;
+  margin-left: 5px;
+}
+
+/*Linkseite*/
+#linktext table{
+  margin-left: 5px;
+  width: 400px;
+  text-align: left;
+}
+
+/*Home-Seite*/
+
+#calculator{
+  margin-left: 10px;
+  width: 200px;
+  height: 200px;
+}
+#calculator textarea{
+  margin-top: 2px;
+  resize: none;
+  height: 18px;
+}
+.einfeld{
+  width: 40px;
+  height: 25px;
+}
+.zweifelder{
+  width: 85px;
+  height: 25px;
+}
