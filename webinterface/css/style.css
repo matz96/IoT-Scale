@@ -12,7 +12,7 @@
   float: left;
 }
 #head{
-  align-items: center;
+  text-align: left;
   height: 394px;
   width: 1750px;
   scale: 0.25;
@@ -49,7 +49,7 @@
 #seitentitel{
   font-family: calibri arial;
   font-size: 28px;
-  height = 20px;
+  height : 20px;
   font-weight: 600;
   padding-top: 20px;
   text-align: center;
@@ -124,8 +124,8 @@ h2{
   border-color: dodgerblue;
   background: dodgerblue;
   color: white;
-  height = 30px;
-  width = 60px;
+  height : 30px;
+  width : 60px;
   margin-right: 5px;
   float: left;
 }
@@ -137,8 +137,8 @@ h2{
   border-color: dodgerblue;
   background: dodgerblue;
   color: white;
-  height = 30px;
-  width = 60px;
+  height : 30px;
+  width : 60px;
   margin-left: 10px;
   margin-right: 5px;
 }
