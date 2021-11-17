@@ -13,11 +13,14 @@
 }
 #head{
   text-align: left;
-  height: 394px;
-  width: 1750px;
+  height: 200px;
+  width: 887px;
   scale: 0.25;
-  background-image: url(../img/fhnw_10mm.jpg);
+  background-image: url(../img/fachhochschule-nordwestschweiz-fhnw-logo-vector.jpg);
+
 }
+
+ 
 #menuleiste{
   color: black;
   font-family: Arial, Helvetica, sans-serif;
