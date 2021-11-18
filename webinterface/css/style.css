@@ -15,6 +15,9 @@
   align-items: center;
   height: 394px;
   width: 1750px;
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 100%;
   scale: 0.25;
   background-image: url(../img/fhnw_10mm.jpg);
 }

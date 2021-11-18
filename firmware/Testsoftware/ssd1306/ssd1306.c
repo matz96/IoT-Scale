@@ -95,7 +95,8 @@ void ssd1306_Init(void) {
     ssd1306_WriteCommand(0x00); //---set low column address
     ssd1306_WriteCommand(0x10); //---set high column address
 
-    ssd1306_WriteCommand(0x40); //--set start line address - CHECK
+    ssd1306_WriteCommand(0xDC);
+    ssd1306_WriteCommand(0x00); //--set start line address - CHECK
 
     ssd1306_SetContrast(0xFF);
 
@@ -126,13 +127,14 @@ void ssd1306_Init(void) {
 #elif (SSD1306_HEIGHT == 128)
     ssd1306_WriteCommand(0x3F); // Seems to work for 128px high displays too.
 #else
-#error "Only 32, 64, or 128 lines of height are supported!"
+    ssd1306_WriteCommand(0x3F);
+//#error "Only 32, 64, or 128 lines of height are supported!"
 #endif
 
     ssd1306_WriteCommand(0xA4); //0xa4,Output follows RAM content;0xa5,Output ignores RAM content
 
     ssd1306_WriteCommand(0xD3); //-set display offset - CHECK
-    ssd1306_WriteCommand(0x00); //-not offset
+    ssd1306_WriteCommand(0x22); //-not offset
 
     ssd1306_WriteCommand(0xD5); //--set display clock divide ratio/oscillator frequency
     ssd1306_WriteCommand(0xF0); //--set divide ratio
@@ -148,7 +150,8 @@ void ssd1306_Init(void) {
 #elif (SSD1306_HEIGHT == 128)
     ssd1306_WriteCommand(0x12);
 #else
-#error "Only 32, 64, or 128 lines of height are supported!"
+    ssd1306_WriteCommand(0x12);
+//#error "Only 32, 64, or 128 lines of height are supported!"
 #endif
 
     ssd1306_WriteCommand(0xDB); //--set vcomh

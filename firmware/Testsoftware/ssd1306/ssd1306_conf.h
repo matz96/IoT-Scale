@@ -36,11 +36,11 @@
 //#define SSD1306_Reset_Pin       OLED_Res_Pin
 
 // Mirror the screen if needed
-// #define SSD1306_MIRROR_VERT
+ //#define SSD1306_MIRROR_VERT
 // #define SSD1306_MIRROR_HORIZ
 
 // Set inverse color if needed
-// # define SSD1306_INVERSE_COLOR
+//# define SSD1306_INVERSE_COLOR
 
 // Include only needed fonts
 #define SSD1306_INCLUDE_FONT_6x8
@@ -51,10 +51,10 @@
 // Some OLEDs don't display anything in first two columns.
 // In this case change the following macro to 130.
 // The default value is 128.
-// #define SSD1306_WIDTH           130
+ #define SSD1306_WIDTH           128
 
 // The height can be changed as well if necessary.
 // It can be 32, 64 or 128. The default value is 64.
-// #define SSD1306_HEIGHT          64
+ #define SSD1306_HEIGHT          130
 
 #endif /* __SSD1306_CONF_H__ */

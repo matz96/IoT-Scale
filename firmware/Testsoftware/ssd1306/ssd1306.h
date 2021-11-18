@@ -56,7 +56,7 @@ _BEGIN_STD_C
 
 /* ^^^ I2C config ^^^ */
 
-/* vvv SPI config vvv */
+/* vvv SPI config vvv */ //not configurated
 
 #ifndef SSD1306_SPI_PORT
 #define SSD1306_SPI_PORT        hspi2
@@ -106,6 +106,35 @@ extern SPI_HandleTypeDef SSD1306_SPI_PORT;
 #ifndef SSD1306_BUFFER_SIZE
 #define SSD1306_BUFFER_SIZE   SSD1306_WIDTH * SSD1306_HEIGHT / 8
 #endif
+
+// SSF1306 command
+#define SSD1306_SET_COLUMN_ADDRESS_LOW 0x00  //0b0000xxxx <- xxxx  address of RAM
+#define SSD1306_SET_COLUMN_ADDRESS_HIGH 0x10 //0b00010xxx <- xxx   address of RAM
+#define SSD1306_MEMORY_ADRESSING_MODE_VERTICAL 0x21
+#define SSD1306_MEMORY_ADRESSING_MODE_HORIZONTAL 0x20
+#define SSD1306_SET_CONTRAST 0x81 //followed by contrast data
+#define SSD1306_SET_SEGMENT_REMAP_DOWN 0xA0
+#define SSD1306_SET_SEGMENT_REMAP_UP 0xA1
+#define SSD1306_SET_MULTIPLEX_RATIO 0xA8 //followed by multiplex ratio
+#define SSD1306_SET_ENTIRE_DISPLAY_OFF 0xA4
+#define SSD1306_SET_ENTIRE_DISPLAY_ON 0xA5
+#define SSD1306_SET_INDICATION_NORMAL 0xA6
+#define SSD1306_SET_INDICATION_REVERSE 0xA7
+#define SSD1306_SET_DISPLAY_OFFSET 0xD3 //followed  by offset value
+#define SSD1306_DCDC_CONTROL_MODE 0xAD //followed by  SettingMode: 0b1000xxxD
+#define SSD1306_DISPLAY_ON 0xAF
+#define SSD1306_DISPLAY_0FF 0xAE
+#define SSD1306_SET_PAGE_ADDRESS 0xB0 //0b1010xxxx <- xxxx page address
+#define SSD1306_OUTPUT_SCAN_DIRECTION 0xC0 //0b1011xxxx <- xxxx scan direction and com
+#define SSD1306_SET_DISPLAY_DIVIDE_RATIO 0xD5 //followed by osc.freq and divide ratio
+#define SSD1306_CHARGE_PERIODE_SET 0xD9 // followed by dis-charge and pre-charge periode
+#define SSD1306_VCOM_DESELECT_LEVEL_MODE 0xDB //followed by VCOM ref
+#define SSD1306_SET_DIPLAY_START_LINE 0xDC //followed by start line
+#define SSD1306_READ_MODIFY_WRITE_START 0xE
+#define SSD1306_READ_MODIFY_WRITE_END 0xEE
+#define SSD1306_NOP 0xE3
+
+
 
 // Enumeration for screen colors
 typedef enum {
