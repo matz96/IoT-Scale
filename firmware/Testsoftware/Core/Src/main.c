@@ -58,6 +58,9 @@
 #define VCNL4040_INT_FLAG 0x0B //Upper
 #define VCNL4040_ID 0x0C
 
+#define OLED_BORDER_OFFSET 5
+#define OLED_LINE_HEIGHT 10
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -89,6 +92,7 @@ HAL_StatusTypeDef send_command_vcnl4040(uint8_t address, uint8_t command, uint16
 void user_pwm_setvalue(uint16_t value);
 bool writeCommand(uint8_t commandCode, uint16_t value);
 uint16_t readCommand(uint8_t commandCode);
+void oled_print(char text[], uint32_t line, SSD1306_COLOR color);
 
 
 /* USER CODE END PFP */
@@ -130,24 +134,27 @@ int main(void)
   MX_TIM1_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  //init_vcnl4040();
+  init_vcnl4040();
   uint16_t pwm_value = 0;
   uint16_t step = 0;
   uint16_t prox = 0;
   int32_t CH1_DC = 0;
+  char text[20];
+
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
 
   ssd1306_Init();
   ssd1306_SetDisplayOn(1);
+  ssd1306_Fill(White);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, SSD1306_I2C_ADDR, 0xAA, 1, HAL_MAX_DELAY);
-
-	  //Testing duty cycle of PWM
+	  /*
+	   * PWM
+	   */
 	  /*
 	  HAL_Delay(100);
 	  if(pwm_value == 0) step = 100;
@@ -155,31 +162,42 @@ int main(void)
 	  pwm_value += step;
 	  user_pwm_setvalue(pwm_value);
 	  */
-	  static int i = 0;
-	  char text[] = "Hallo Welt dies ist ein Test des Displays";
-	  ssd1306_Fill(White);
-	  ssd1306_SetCursor(5, 5);
-	  ssd1306_WriteString(text,  Font_6x8, Black);
-	  //ssd1306_WriteString(*text, Font_6x8 , White);
-	  ssd1306_UpdateScreen();
-
 	  //Prescale of PWM: 1000 -> ~8kHz
-	  while (CH1_DC < 1000)
-	        {
-	            TIM1->CCR4 = CH1_DC;
-	            CH1_DC += 70;
-	            HAL_Delay(100);
-	        }
-		while(CH1_DC > 0)
-		{
-			TIM1->CCR4 = CH1_DC;
-			CH1_DC -= 70;
-			HAL_Delay(100);
-		}
+		/*	  while (CH1_DC < 1000)
+					{
+						TIM1->CCR4 = CH1_DC;
+						CH1_DC += 70;
+						HAL_Delay(100);
+					}
+				while(CH1_DC > 0)
+				{
+					TIM1->CCR4 = CH1_DC;
+					CH1_DC -= 70;
+					HAL_Delay(100);
+				}
+		  */
 
+	  /*
+	   * OLED
+	   */
+	  static int n = 0;
+	  snprintf(text, sizeof(text), "Test: %d", n++);
+	  oled_print(text, 1, Black);
+
+	  /*
+	   * VCNL4040
+	   */
 	  //get Proximity
-	  /*prox = getProximity();
-	  HAL_Delay(200);*/
+	  prox = getProximity();
+	  snprintf(text, sizeof(text), "Dist: %d", prox);
+	  oled_print(text, 2, Black);
+
+
+
+
+
+	  HAL_Delay(500);
+
 
     /* USER CODE END WHILE */
 
@@ -451,7 +469,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void init_vcnl4040(void){
 	//if (getID() != 0x0186) return (false); //Check default ID value
-	setLEDCurrent(200); //Max IR LED current
+	setLEDCurrent(50); //Max IR LED current
 	setIRDutyCycle(40); //Set to highest duty cycle
 	setProxIntegrationTime(8); //Set to max integration
 	setProxResolution(16); //Set to 16-bit output
@@ -519,6 +537,14 @@ void user_pwm_setvalue(uint16_t value)
 {
 
 }
+
+void oled_print(char text[], uint32_t line, SSD1306_COLOR color){
+	  ssd1306_SetCursor(OLED_BORDER_OFFSET, (line-1)*OLED_LINE_HEIGHT+OLED_BORDER_OFFSET);
+	  ssd1306_WriteString(text,  Font_6x8, color);
+	  ssd1306_UpdateScreen();
+}
+
+
 
 /* USER CODE END 4 */
 
