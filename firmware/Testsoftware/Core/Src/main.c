@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include "vcnl4040.h"
 #include "ssd1306.h"
+#include "ssd1306_tests.h"
 
 /* USER CODE END Includes */
 
@@ -135,14 +136,16 @@ int main(void)
   uint16_t prox = 0;
   int32_t CH1_DC = 0;
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+
   ssd1306_Init();
+  ssd1306_SetDisplayOn(1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, 0xFF, 1, HAL_MAX_DELAY);
+	  //HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, SSD1306_I2C_ADDR, 0xAA, 1, HAL_MAX_DELAY);
 
 	  //Testing duty cycle of PWM
 	  /*
@@ -152,9 +155,13 @@ int main(void)
 	  pwm_value += step;
 	  user_pwm_setvalue(pwm_value);
 	  */
-	  char text[6] = "hello";
-	  ssd1306_WriteString(text, Font_6x8 , White);
-
+	  static int i = 0;
+	  char text[] = "Hallo Welt dies ist ein Test des Displays";
+	  ssd1306_Fill(White);
+	  ssd1306_SetCursor(5, 5);
+	  ssd1306_WriteString(text,  Font_6x8, Black);
+	  //ssd1306_WriteString(*text, Font_6x8 , White);
+	  ssd1306_UpdateScreen();
 
 	  //Prescale of PWM: 1000 -> ~8kHz
 	  while (CH1_DC < 1000)
@@ -292,7 +299,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x0000020B;
+  hi2c1.Init.Timing = 0x2000090E;
   hi2c1.Init.OwnAddress1 = 120;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
