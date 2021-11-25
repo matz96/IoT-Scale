@@ -52,6 +52,7 @@
 #kontakt{
   position: fixed;
   bottom: 10%;
+  left: 2.5%;
   color: black;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 10px;
@@ -89,19 +90,47 @@
 #body{
   margin: 50px;
   background-color: darkgrey;
+}
+
+.body_grid{
+  display:grid;
+  grid-gap: 50px 1px;
+  grid-template-columns: [first] 30% [second] 60% [third] 10%;
   
+}
+
+
+.txt_out{
+  grid-column: 2/span 1;
+  border: 2px solid darkgray;  
+  background-color: rgb(236, 236, 236);
+  text-align: right;
+
+
+
+}
+.description{
+  grid-column: 1/span 1;
+  color: black;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+}
+#dropdown{
+  position: absolute;
+  height: 8%;
+
+}
+.dropdown{
+  grid-column:  3/ span 1;
 
 }
 
-#anzeige{
-  background-color: white;
-  height: 600px;
-  margin-left: 200px;
-}
+
 #seitentitel{
   position: center;
   top: 20px;
-  text-align: left;
+  text-align: center;
   font-family: calibri arial;
   font-size: 28px;
   height : 20px;

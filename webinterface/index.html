@@ -62,10 +62,25 @@
     </div>
 
     <div class="main">
-      
-      <div id="body">
-        <p>hello</p>
+
+
+      <div class="body_grid">
+        <div class="description">
+          <p>Gewicht</p>
+        </div>
+        <div class="txt_out">
+          <output type="text" value= display() />
+        </div>
+        <div class="dropdown">
+          <select id = "dropdown"
+            onchange="document.getElementById('displayValue').value=this.options[this.selectedIndex].text; document.getElementById('idValue').value=this.options[this.selectedIndex].value;">
+            <option value="gram">g</option>
+            <option value="pound">lb</option>
+          </select>
+        </div>
+
       </div>
+
 
     </div>
     <div class="left"></div>
