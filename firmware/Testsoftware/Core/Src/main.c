@@ -58,6 +58,9 @@
 #define VCNL4040_INT_FLAG 0x0B //Upper
 #define VCNL4040_ID 0x0C
 
+#define OLED_BORDER_OFFSET 5
+#define OLED_LINE_HEIGHT 10
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -69,11 +72,14 @@
 ADC_HandleTypeDef hadc;
 
 I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c2;
 
 TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
-const uint8_t VCNL4040_ADDR = 0x60; //7-bit unshifted I2C address of VCNL4040
+const uint8_t VCNL4040_ADDR = (0x60<<1) & (0x01); //7-bit unshifted I2C address of VCNL4040
+const uint8_t RPZERO_ADDR = 0x00; // noch unbekannt
+HAL_StatusTypeDef send_command_vcnl4040(uint8_t address, uint8_t command, uint16_t data);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,13 +88,14 @@ static void MX_GPIO_Init(void);
 static void MX_ADC_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_I2C2_Init(void);
 /* USER CODE BEGIN PFP */
 void init_vcnl4040(void);
 void receive_data_vcnl4040(void);
-HAL_StatusTypeDef send_command_vcnl4040(uint8_t address, uint8_t command, uint16_t data);
 void user_pwm_setvalue(uint16_t value);
 bool writeCommand(uint8_t commandCode, uint16_t value);
 uint16_t readCommand(uint8_t commandCode);
+void oled_print(char text[], uint32_t line, SSD1306_COLOR color);
 
 
 /* USER CODE END PFP */
@@ -129,25 +136,54 @@ int main(void)
   MX_ADC_Init();
   MX_TIM1_Init();
   MX_I2C1_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-  //init_vcnl4040();
+  init_vcnl4040();
   uint16_t pwm_value = 0;
   uint16_t step = 0;
   uint16_t prox = 0;
   int32_t CH1_DC = 0;
+  char text[20];
+
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
 
   ssd1306_Init();
   ssd1306_SetDisplayOn(1);
+  ssd1306_Fill(White);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, SSD1306_I2C_ADDR, 0xAA, 1, HAL_MAX_DELAY);
+	  static uint8_t data = 0;
+	  HAL_StatusTypeDef ret = HAL_OK;
 
-	  //Testing duty cycle of PWM
+	  while(1)
+	  {
+		  ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, 0x0C, 1, HAL_MAX_DELAY);
+		  //send_command_vcnl4040(0x0C);
+		  HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, data, sizeof(uint8_t), HAL_MAX_DELAY);
+		  HAL_Delay(2000);
+	  }
+
+
+
+	  /*
+	   * Testfunction for I2C-2 with Raspberry Pi Zero W
+	   */
+	  /*static int cnt = 0;
+	  snprintf(text, sizeof(text), "Test: %d", cnt++);
+	  while(1){
+		  HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &text, sizeof(text), HAL_MAX_DELAY);
+		  HAL_Delay(200);
+	  }*/
+
+
+
+	  /*
+	   * PWM
+	   */
 	  /*
 	  HAL_Delay(100);
 	  if(pwm_value == 0) step = 100;
@@ -155,31 +191,42 @@ int main(void)
 	  pwm_value += step;
 	  user_pwm_setvalue(pwm_value);
 	  */
-	  static int i = 0;
-	  char text[] = "Hallo Welt dies ist ein Test des Displays";
-	  ssd1306_Fill(White);
-	  ssd1306_SetCursor(5, 5);
-	  ssd1306_WriteString(text,  Font_6x8, Black);
-	  //ssd1306_WriteString(*text, Font_6x8 , White);
-	  ssd1306_UpdateScreen();
-
 	  //Prescale of PWM: 1000 -> ~8kHz
-	  while (CH1_DC < 1000)
-	        {
-	            TIM1->CCR4 = CH1_DC;
-	            CH1_DC += 70;
-	            HAL_Delay(100);
-	        }
-		while(CH1_DC > 0)
-		{
-			TIM1->CCR4 = CH1_DC;
-			CH1_DC -= 70;
-			HAL_Delay(100);
-		}
+		/*	  while (CH1_DC < 1000)
+					{
+						TIM1->CCR4 = CH1_DC;
+						CH1_DC += 70;
+						HAL_Delay(100);
+					}
+				while(CH1_DC > 0)
+				{
+					TIM1->CCR4 = CH1_DC;
+					CH1_DC -= 70;
+					HAL_Delay(100);
+				}
+		  */
 
+	  /*
+	   * OLED
+	   */
+	  static int n = 0;
+	  snprintf(text, sizeof(text), "Test: %d", n++);
+	  oled_print(text, 1, Black);
+
+	  /*
+	   * VCNL4040
+	   */
 	  //get Proximity
-	  /*prox = getProximity();
-	  HAL_Delay(200);*/
+	  prox = getProximity();
+	  snprintf(text, sizeof(text), "Dist: %d", prox);
+	  oled_print(text, 2, Black);
+
+
+
+
+
+	  HAL_Delay(2000);
+
 
     /* USER CODE END WHILE */
 
@@ -330,6 +377,52 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief I2C2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C2_Init(void)
+{
+
+  /* USER CODE BEGIN I2C2_Init 0 */
+
+  /* USER CODE END I2C2_Init 0 */
+
+  /* USER CODE BEGIN I2C2_Init 1 */
+
+  /* USER CODE END I2C2_Init 1 */
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.Timing = 0x2000090E;
+  hi2c2.Init.OwnAddress1 = 0;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C2_Init 2 */
+
+  /* USER CODE END I2C2_Init 2 */
+
+}
+
+/**
   * @brief TIM1 Initialization Function
   * @param None
   * @retval None
@@ -418,8 +511,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_11
-                          |GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_11, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PC0 PC1 PC2 PC3
                            PC4 */
@@ -429,21 +521,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB1 PB2 PB11
-                           PB12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_11
-                          |GPIO_PIN_12;
+  /*Configure GPIO pins : PB0 PB1 PB2 PB11 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_11;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PB13 PB14 PB15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF0_SPI2;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
@@ -451,7 +533,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void init_vcnl4040(void){
 	//if (getID() != 0x0186) return (false); //Check default ID value
-	setLEDCurrent(200); //Max IR LED current
+	setLEDCurrent(50); //Max IR LED current
 	setIRDutyCycle(40); //Set to highest duty cycle
 	setProxIntegrationTime(8); //Set to max integration
 	setProxResolution(16); //Set to 16-bit output
@@ -519,6 +601,14 @@ void user_pwm_setvalue(uint16_t value)
 {
 
 }
+
+void oled_print(char text[], uint32_t line, SSD1306_COLOR color){
+	  ssd1306_SetCursor(OLED_BORDER_OFFSET, (line-1)*OLED_LINE_HEIGHT+OLED_BORDER_OFFSET);
+	  ssd1306_WriteString(text,  Font_6x8, color);
+	  ssd1306_UpdateScreen();
+}
+
+
 
 /* USER CODE END 4 */
 
