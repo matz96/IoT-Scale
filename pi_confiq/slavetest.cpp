@@ -8,7 +8,7 @@ void runSlave();
 void closeSlave();
 int getControlBits(int, bool);
 
-const int slaveAddress = 0x03; // <-- Your address of choice
+const int slaveAddress = 0x50; // <-- Your address of choice
 bsc_xfer_t xfer; // Struct to control data flow
 
 int main(){
