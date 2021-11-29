@@ -5,7 +5,7 @@
 using namespace std;
 
 void runSlave();
-void closeSlave();
+//void closeSlave();
 int getControlBits(int, bool);
 
 const int slaveAddress = 0x03; // <-- Your address of choice
@@ -59,7 +59,7 @@ void runSlave() {
   MyFile.close();
 }*/
 
-void closeSlave() {
+/*void closeSlave() {
     gpioInitialise();
     cout << "Initialized GPIOs\n";
 
@@ -69,7 +69,7 @@ void closeSlave() {
 
     gpioTerminate();
     cout << "Terminated GPIOs.\n";
-}
+}*/
 
 
 int getControlBits(int address /* max 127 */, bool open) {
