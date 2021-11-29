@@ -169,7 +169,7 @@ int main(void)
 
 
 
-	  buf[0] = 0x08;
+	  /*buf[0] = 0x08;
 	  writeCommands(0x00, 0b00000000,0b00000000);
 	  writeCommands(0x03, 0b11111110, 0b00001011); // PS_CONF1_L & PS_CONF2_H
 	  writeCommands(0x04,0b011000001,0b00000111); // init PS_CONF3
@@ -181,11 +181,11 @@ int main(void)
 		  uint32_t info = readCommand(0x0C);
 		  HAL_Delay(2000);
 	  }
+*/
 
+	  //ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, buf[0], 1, HAL_MAX_DELAY);
 
-	  ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, buf[0], 1, HAL_MAX_DELAY);
-
-	  while(1)
+	  /*while(1)
 	  {
 		  ret = HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, buf, 2, HAL_MAX_DELAY);
 		  if(ret != HAL_OK){
@@ -197,18 +197,20 @@ int main(void)
 		 // HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, data, sizeof(uint8_t), HAL_MAX_DELAY);
 		  HAL_Delay(2000);
 	  }
-
+*/
 
 
 	  /*
 	   * Testfunction for I2C-2 with Raspberry Pi Zero W
 	   */
-	  /*static int cnt = 0;
-	  snprintf(text, sizeof(text), "Test: %d", cnt++);
+	  uint8_t cnt = 0;
+	  //snprintf(text, sizeof(text), "Test: %d", cnt++);
+
 	  while(1){
-		  HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &text, sizeof(text), HAL_MAX_DELAY);
-		  HAL_Delay(200);y
-	  }*/
+		  HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &cnt,1, HAL_MAX_DELAY);
+		  HAL_Delay(200);
+		  cnt++;
+	  }
 
 
 
@@ -240,7 +242,7 @@ int main(void)
 	  /*
 	   * OLED
 	   */
-	  static int n = 0;
+	  /*static int n = 0;
 	  snprintf(text, sizeof(text), "Test: %d", n++);
 	  oled_print(text, 1, Black);
 
@@ -248,11 +250,11 @@ int main(void)
 	   * VCNL4040
 	   */
 	  //get Proximity
+	  /*
 	  prox = getProximity();
 	  snprintf(text, sizeof(text), "Dist: %d", prox);
 	  oled_print(text, 2, Black);
-
-
+	  */
 
 
 
