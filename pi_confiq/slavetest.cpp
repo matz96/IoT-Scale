@@ -1,5 +1,6 @@
 #include <pigpio.h>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -47,6 +48,16 @@ void runSlave() {
     }else
         cout << "Failed to open slave!!!\n";
 }
+
+/*void writefile(char rxBuf){
+    ofstream MyFile("i2c_output.txt");
+
+  // Write to the file
+  MyFile << rxBuf ;
+
+  // Close the file
+  MyFile.close();
+}*/
 
 void closeSlave() {
     gpioInitialise();
