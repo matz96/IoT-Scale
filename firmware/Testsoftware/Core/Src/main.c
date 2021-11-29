@@ -77,9 +77,10 @@ I2C_HandleTypeDef hi2c2;
 TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
-const uint8_t VCNL4040_ADDR = (0x60<<1) & (0x01); //7-bit unshifted I2C address of VCNL4040
-const uint8_t RPZERO_ADDR = 0x00; // noch unbekannt
+const uint8_t VCNL4040_ADDR = 0x60<<1; //7-bit unshifted I2C address of VCNL4040
+const uint8_t RPZERO_ADDR = 0x50;
 HAL_StatusTypeDef send_command_vcnl4040(uint8_t address, uint8_t command, uint16_t data);
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -94,6 +95,7 @@ void init_vcnl4040(void);
 void receive_data_vcnl4040(void);
 void user_pwm_setvalue(uint16_t value);
 bool writeCommand(uint8_t commandCode, uint16_t value);
+bool writeCommands(uint8_t commandCode, uint8_t lowbyte, uint8_t highbyte);
 uint16_t readCommand(uint8_t commandCode);
 void oled_print(char text[], uint32_t line, SSD1306_COLOR color);
 
@@ -138,12 +140,14 @@ int main(void)
   MX_I2C1_Init();
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-  init_vcnl4040();
+  //init_vcnl4040();
   uint16_t pwm_value = 0;
   uint16_t step = 0;
   uint16_t prox = 0;
   int32_t CH1_DC = 0;
   char text[20];
+  HAL_StatusTypeDef ret;
+  uint8_t buf[12];
 
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
 
@@ -156,14 +160,41 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  static uint8_t data = 0;
-	  HAL_StatusTypeDef ret = HAL_OK;
+	  /*setLEDCurrent(50); //Max IR LED current
+	  	setIRDutyCycle(40); //Set to highest duty cycle
+	  	setProxIntegrationTime(8); //Set to max integration
+	  	setProxResolution(16); //Set to 16-bit output
+	  	enableSmartPersistance(); //Turn on smart presistance
+	  	powerOnProximity(); //Turn on prox sensing*/
+
+
+
+	  buf[0] = 0x08;
+	  writeCommands(0x00, 0b00000000,0b00000000);
+	  writeCommands(0x03, 0b11111110, 0b00001011); // PS_CONF1_L & PS_CONF2_H
+	  writeCommands(0x04,0b011000001,0b00000111); // init PS_CONF3
+	  //writeCommands(0x0)
+
+	  while(1){
+		  uint32_t data  = readCommand(0x08);
+		  uint32_t interupt = readCommand(0x0B);
+		  uint32_t info = readCommand(0x0C);
+		  HAL_Delay(2000);
+	  }
+
+
+	  ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, buf[0], 1, HAL_MAX_DELAY);
 
 	  while(1)
 	  {
-		  ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, 0x0C, 1, HAL_MAX_DELAY);
+		  ret = HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, buf, 2, HAL_MAX_DELAY);
+		  if(ret != HAL_OK){
+
+		  }else{
+		  }
+
 		  //send_command_vcnl4040(0x0C);
-		  HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, data, sizeof(uint8_t), HAL_MAX_DELAY);
+		 // HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, data, sizeof(uint8_t), HAL_MAX_DELAY);
 		  HAL_Delay(2000);
 	  }
 
@@ -176,7 +207,7 @@ int main(void)
 	  snprintf(text, sizeof(text), "Test: %d", cnt++);
 	  while(1){
 		  HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &text, sizeof(text), HAL_MAX_DELAY);
-		  HAL_Delay(200);
+		  HAL_Delay(200);y
 	  }*/
 
 
@@ -347,7 +378,7 @@ static void MX_I2C1_Init(void)
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
   hi2c1.Init.Timing = 0x2000090E;
-  hi2c1.Init.OwnAddress1 = 120;
+  hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
@@ -392,7 +423,7 @@ static void MX_I2C2_Init(void)
 
   /* USER CODE END I2C2_Init 1 */
   hi2c2.Instance = I2C2;
-  hi2c2.Init.Timing = 0x2000090E;
+  hi2c2.Init.Timing = 0x0000020B;
   hi2c2.Init.OwnAddress1 = 0;
   hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -558,6 +589,7 @@ uint16_t readCommand(uint8_t commandCode)
 	uint8_t data;
 	HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &commandCode, 1, HAL_MAX_DELAY);
 
+	data = 11;
    if (ret != HAL_OK) //Send a restart command. Do not release bus.
     {
       return (0); //Sensor did not ACK
@@ -574,11 +606,19 @@ bool writeCommand(uint8_t commandCode, uint16_t value)
 {
 	uint8_t	LSB =  (value & 0xFF);
 	uint8_t MSB = (value >> 8);
+	return (writeCommands(commandCode, LSB, MSB));
+}
 
-   HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &commandCode, 1, HAL_MAX_DELAY);
-   HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &LSB, 1, HAL_MAX_DELAY);
-   HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &MSB, 1, HAL_MAX_DELAY);
-   HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &commandCode, 1, HAL_MAX_DELAY);
+bool writeCommands(uint8_t commandCode, uint8_t lowbyte, uint8_t highbyte)
+{
+	static HAL_StatusTypeDef ret;
+	uint8_t	LSB =  lowbyte;
+	uint8_t MSB = highbyte;
+
+   ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &commandCode, 1, HAL_MAX_DELAY);
+   ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &LSB, 1, HAL_MAX_DELAY);
+   ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &MSB, 1, HAL_MAX_DELAY);
+   //HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &commandCode, 1, HAL_MAX_DELAY);
    if(ret != HAL_OK){
 	   return (false); //Sensor did not ACK
    }
