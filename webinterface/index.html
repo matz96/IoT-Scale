@@ -69,17 +69,10 @@
           <p>Gewicht</p>
         </div>
         <div class="txt_out">
-
-          <?php
-
-          $f = fopen("weight.txt", "r");
-        
-          // Read line from the text file and write the contents to the client
-          echo fgets($f); 
-        
-          fclose($f);
-        
-          ?>
+          <script>
+            loadFile()
+            </script>
+          
 
           
 
