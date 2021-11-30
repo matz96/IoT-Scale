@@ -3,7 +3,7 @@
 #include <fstream>
 
 using namespace std;
- const char *path="/var/www/html/pro3e/webinterface/weight.txt"
+ const char *path="/var/www/html/pro3e/webinterface/weight.txt";
 void runSlave();
 //void closeSlave();
 int getControlBits(int, bool);
@@ -37,12 +37,14 @@ void runSlave() {
             bscXfer(&xfer);
             if(xfer.rxCnt > 0) {
                 cout << "Received " << xfer.rxCnt << " bytes: ";
-                for(int i = 0; i < xfer.rxCnt; i++)
+                for(int i = 0; i < xfer.rxCnt; i++){
                     ofstream MyFile;
                     MyFile.open (path, ios::out | ios::trunc);
                     MyFile << xfer.rxBuf[i];
+		    cout<<xfer.rxBuf[i];
                     MyFile.close();
-                cout << "\n";
+                   }  
+		cout<< "\n";      
             }
             //if (xfer.rxCnt > 0){
             //    cout << xfer.rxBuf;
