@@ -43,9 +43,12 @@ void runSlave() {
                     MyFile << xfer.rxBuf[i];
 		            cout<<xfer.rxBuf[i];//used for testing
                     MyFile.close();
-                   }  
+                   }
+              
 		cout<< "\n";      
             }
+            sleep(2000);
+            
             //if (xfer.rxCnt > 0){
             //    cout << xfer.rxBuf;
             //}
