@@ -69,55 +69,17 @@
           <p>Gewicht</p>
         </div>
         <div class="txt_out">
-          <meta http-equiv='Content-type' content='text/html;charset=UTF-8'>
-          <script>
-            function startRead() {
-              // obtain input element through DOM 
+          <?php
 
-              var file = document.getElementById("/var/www/html/pro3e/webnterface/weight.txt").files[0]
-
-              if (file) {
-                getAsText(file);
-              }
-            }
-
-            function getAsText(readFile) {
-              var reader;
-              try {
-                reader = new FileReader();
-              } catch (e) {
-                document.getElementById('output').innerHTML =
-                  "Error: seems File API is not supported on your browser";
-                return;
-              }
-
-              // Read file into memory as UTF-8      
-              reader.readAsText(readFile, "UTF-8");
-
-              // Handle progress, success, and errors
-
-              reader.onload = loaded;
-              reader.onerror = errorHandler;
-            }
-
-
-
-            function loaded(evt) {
-              // Obtain the read file data    
-              var fileString = evt.target.result;
-              document.getElementById('output').innerHTML = fileString;
-            }
-
-            function errorHandler(evt) {
-              if (evt.target.error.code == evt.target.error.NOT_READABLE_ERR) {
-                // The file could not be read
-                document.getElementById('output').innerHTML = "Error reading file..."
-              }
-            }
-            //Start reading file on load
-            window.addEventListener("load", startRead() {}, false);
-
-          </script>
+          $f = fopen("weight.txt", "r");
+        
+          // Read line from the text file and write the contents to the client
+          echo fgets($f); 
+        
+          fclose($f);
+        
+          ?>
+          
 
         </div>
         <div class="dropdown">
