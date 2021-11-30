@@ -1,6 +1,6 @@
 
-function loadFile() {
-    filePath = "weight.txt";
+function loadFile(filePath) {
+     
     var result = null;
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open("GET", filePath, false);
@@ -10,3 +10,5 @@ function loadFile() {
     }
     return result;
   }
+
+ 
