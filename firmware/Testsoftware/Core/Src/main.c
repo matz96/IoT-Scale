@@ -78,7 +78,7 @@ TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
 const uint8_t VCNL4040_ADDR = 0x60<<1; //7-bit unshifted I2C address of VCNL4040
-const uint8_t RPZERO_ADDR = 0x50;
+const uint8_t RPZERO_ADDR = 0x03<<1;
 HAL_StatusTypeDef send_command_vcnl4040(uint8_t address, uint8_t command, uint16_t data);
 
 /* USER CODE END PV */
@@ -154,6 +154,7 @@ int main(void)
   ssd1306_Init();
   ssd1306_SetDisplayOn(1);
   ssd1306_Fill(White);
+  CH1_DC = 10;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -170,10 +171,10 @@ int main(void)
 
 
 	  /*buf[0] = 0x08;
+	  //Init register of VCNL4040
 	  writeCommands(0x00, 0b00000000,0b00000000);
 	  writeCommands(0x03, 0b11111110, 0b00001011); // PS_CONF1_L & PS_CONF2_H
 	  writeCommands(0x04,0b011000001,0b00000111); // init PS_CONF3
-	  //writeCommands(0x0)
 
 	  while(1){
 		  uint32_t data  = readCommand(0x08);
@@ -203,43 +204,41 @@ int main(void)
 	  /*
 	   * Testfunction for I2C-2 with Raspberry Pi Zero W
 	   */
-	  uint8_t cnt = 0;
+	  //uint8_t cnt = 0;
 	  //snprintf(text, sizeof(text), "Test: %d", cnt++);
 
-	  while(1){
-		  HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &cnt,1, HAL_MAX_DELAY);
+	 /* while(1){
+		  ret = HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &cnt,1, HAL_MAX_DELAY);
 		  HAL_Delay(200);
 		  cnt++;
-	  }
+	  }*/
 
 
 
 	  /*
 	   * PWM
 	   */
-	  /*
-	  HAL_Delay(100);
-	  if(pwm_value == 0) step = 100;
-	  if(pwm_value == 2000) step = -100;
-	  pwm_value += step;
-	  user_pwm_setvalue(pwm_value);
-	  */
-	  //Prescale of PWM: 1000 -> ~8kHz
-		/*	  while (CH1_DC < 1000)
-					{
-						TIM1->CCR4 = CH1_DC;
-						CH1_DC += 70;
-						HAL_Delay(100);
-					}
-				while(CH1_DC > 0)
-				{
-					TIM1->CCR4 = CH1_DC;
-					CH1_DC -= 70;
-					HAL_Delay(100);
-				}
-		  */
+	  //HAL_Delay(100);
+	  //if(pwm_value == 0) step = 100;
+	  //if(pwm_value == 2000) step = -100;
+	  //pwm_value += step;
+	  //user_pwm_setvalue(pwm_value);
 
-	  /*
+
+	  //Prescale of PWM: 1000 -> ~8kHz
+	  while (CH1_DC < 2000)
+		{
+			TIM1->CCR4 = CH1_DC;
+			CH1_DC += 10;
+			HAL_Delay(100);
+		}
+		while(CH1_DC > 0)
+		{
+			TIM1->CCR4 = CH1_DC;
+			CH1_DC -= 10;
+			HAL_Delay(100);
+		}
+	  /*/
 	   * OLED
 	   */
 	  /*static int n = 0;
@@ -258,7 +257,7 @@ int main(void)
 
 
 
-	  HAL_Delay(2000);
+	  //HAL_Delay(2000);
 
 
     /* USER CODE END WHILE */
@@ -286,7 +285,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSI14State = RCC_HSI14_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.HSI14CalibrationValue = 16;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
+  RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -295,11 +297,11 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -380,7 +382,7 @@ static void MX_I2C1_Init(void)
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
   hi2c1.Init.Timing = 0x2000090E;
-  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.OwnAddress1 = 192;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
@@ -425,7 +427,7 @@ static void MX_I2C2_Init(void)
 
   /* USER CODE END I2C2_Init 1 */
   hi2c2.Instance = I2C2;
-  hi2c2.Init.Timing = 0x0000020B;
+  hi2c2.Init.Timing = 0x2010091A;
   hi2c2.Init.OwnAddress1 = 0;
   hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -478,7 +480,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 0;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 1000;
+  htim1.Init.Period = 2000;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
