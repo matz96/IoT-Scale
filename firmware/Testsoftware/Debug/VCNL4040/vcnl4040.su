@@ -35,8 +35,8 @@ vcnl4040.c:274:6:isClose	24	static
 vcnl4040.c:281:6:isAway	24	static
 vcnl4040.c:288:6:isLight	24	static
 vcnl4040.c:295:6:isDark	24	static
-vcnl4040.c:369:6:writeCommandLower	32	static
-vcnl4040.c:378:6:writeCommandUpper	32	static
-vcnl4040.c:387:9:readCommandLower	32	static
-vcnl4040.c:394:9:readCommandUpper	32	static
+vcnl4040.c:369:6:writeCommandLower	24	static
+vcnl4040.c:378:6:writeCommandUpper	24	static
+vcnl4040.c:387:9:readCommandLower	24	static
+vcnl4040.c:394:9:readCommandUpper	24	static
 vcnl4040.c:405:6:bitMask	32	static
