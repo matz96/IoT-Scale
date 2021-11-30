@@ -41,7 +41,7 @@ void runSlave() {
                     ofstream MyFile;
                     MyFile.open (path, ios::out | ios::trunc);
                     MyFile << xfer.rxBuf[i];
-		    cout<<xfer.rxBuf[i];
+		            cout<<xfer.rxBuf[i];//used for testing
                     MyFile.close();
                    }  
 		cout<< "\n";      
