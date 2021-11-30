@@ -1,0 +1,2 @@
+g++ slavetest.cpp -lpthread -lpigpio -o slavetest
+sudo ./slavetest

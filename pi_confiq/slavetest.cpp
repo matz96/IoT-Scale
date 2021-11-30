@@ -38,7 +38,8 @@ void runSlave() {
             if(xfer.rxCnt > 0) {
                 cout << "Received " << xfer.rxCnt << " bytes: ";
                 for(int i = 0; i < xfer.rxCnt; i++)
-                    ofstream MyFile(path);
+                    ofstream MyFile;
+                    MyFile.open (path, ios::out | ios::trunc);
                     MyFile << xfer.rxBuf[i];
                     MyFile.close();
                 cout << "\n";
