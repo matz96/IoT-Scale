@@ -10,10 +10,14 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include ssd1306/subdir.mk
--include VCNL4040/subdir.mk
+-include Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/subdir.mk
+-include Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM0/subdir.mk
+-include Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/subdir.mk
+-include Middlewares/Third_Party/FreeRTOS/Source/subdir.mk
 -include Drivers/STM32F0xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
+-include App/Src/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -63,8 +67,8 @@ all: main-build
 main-build: Pro3E_RT_Mikrocotroller.elf secondary-outputs
 
 # Tool invocations
-Pro3E_RT_Mikrocotroller.elf: $(OBJS) $(USER_OBJS) C:\Users\engel\OneDrive\ -\ FHNW\pro3E\Software\pro3e\firmware\Testsoftware\STM32F070RBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Pro3E_RT_Mikrocotroller.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"C:\Users\engel\OneDrive - FHNW\pro3E\Software\pro3e\firmware\Testsoftware\STM32F070RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Pro3E_RT_Mikrocotroller.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Pro3E_RT_Mikrocotroller.elf: $(OBJS) $(USER_OBJS) C:\Users\engel\OneDrive\ -\ FHNW\pro3E\Software\pro3e\firmware\Software\STM32F070RBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Pro3E_RT_Mikrocotroller.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"C:\Users\engel\OneDrive - FHNW\pro3E\Software\pro3e\firmware\Software\STM32F070RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Pro3E_RT_Mikrocotroller.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

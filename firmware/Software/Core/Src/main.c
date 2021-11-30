@@ -19,15 +19,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <string.h>
-#include <stdio.h>
-#include <stdbool.h>
-//#include "vcnl4040.h"
-#include "ssd1306.h"
-#include "ssd1306_tests.h"
 
 /* USER CODE END Includes */
 
@@ -39,48 +34,33 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-
-#define LOWER true
-#define UPPER false
-
-#define VCNL4040_ALS_CONF 0x00
-#define VCNL4040_ALS_THDH 0x01
-#define VCNL4040_ALS_THDL 0x02
-#define VCNL4040_PS_CONF1 0x03 //Lower
-#define VCNL4040_PS_CONF2 0x03 //Upper
-#define VCNL4040_PS_CONF3 0x04 //Lower
-#define VCNL4040_PS_MS 0x04 //Upper
-#define VCNL4040_PS_CANC 0x05
-#define VCNL4040_PS_THDL 0x06
-#define VCNL4040_PS_THDH 0x07
-#define VCNL4040_PS_DATA 0x08
-#define VCNL4040_ALS_DATA 0x09
-#define VCNL4040_WHITE_DATA 0x0A
-#define VCNL4040_INT_FLAG 0x0B //Upper
-#define VCNL4040_ID 0x0C
-
-#define OLED_BORDER_OFFSET 5
-#define OLED_LINE_HEIGHT 10
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+#undef osThreadDef
+#define osThreadDef(...)
+#define osThreadCreate(...) NULL
+#define osKernelStart()
 
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc;
 
-I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 
 TIM_HandleTypeDef htim1;
 
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* USER CODE BEGIN PV */
-const uint8_t VCNL4040_ADDR = 0x60<<1; //7-bit unshifted I2C address of VCNL4040
-const uint8_t RPZERO_ADDR = 0x03<<1;
-HAL_StatusTypeDef send_command_vcnl4040(uint8_t address, uint8_t command, uint16_t data);
+
 
 /* USER CODE END PV */
 
@@ -89,17 +69,10 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC_Init(void);
 static void MX_TIM1_Init(void);
-static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
-/* USER CODE BEGIN PFP */
-void init_vcnl4040(void);
-void receive_data_vcnl4040(void);
-void user_pwm_setvalue(uint16_t value);
-bool writeCommand(uint8_t commandCode, uint16_t value);
-bool writeCommands(uint8_t commandCode, uint8_t lowbyte, uint8_t highbyte);
-int32_t readSensor(uint8_t commandCode);
-void oled_print(char text[], uint32_t line, SSD1306_COLOR color);
+void StartDefaultTask(void *argument);
 
+/* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
@@ -138,135 +111,51 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC_Init();
   MX_TIM1_Init();
-  MX_I2C1_Init();
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-  //init_vcnl4040();
-  uint16_t pwm_value = 0;
-  uint16_t step = 0;
-  uint16_t prox = 0;
-  int32_t CH1_DC = 0;
-  char text[20];
-  HAL_StatusTypeDef ret;
-  uint8_t buf[12];
-
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
-
-  //ssd1306_Init();
-  //ssd1306_SetDisplayOn(1);
-  //ssd1306_Fill(White);
-  CH1_DC = 10;
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  app_main();
   while (1)
   {
-	  /*setLEDCurrent(50); //Max IR LED current
-	  	setIRDutyCycle(40); //Set to highest duty cycle
-	  	setProxIntegrationTime(8); //Set to max integration
-	  	setProxResolution(16); //Set to 16-bit output
-	  	enableSmartPersistance(); //Turn on smart presistance
-	  	powerOnProximity(); //Turn on prox sensing*/
-
-
-
-	  buf[0] = 0x08;
-	  // Init register of VCNL4040
-	  writeCommands(0x00, 0b11000001, 0b00000000); //ALS Conf
-	  writeCommands(0x03, 0b11111110, 0b00001000); // PS_CONF1_L & PS_CONF2_H
-	  writeCommands(0x04, 0b01101101, 0b10100111); // PS_CONF3_L & PS_MS
-	  writeCommands(0x06, 0x00, 0x00); //PS Threashold
-
-
-	  while(1){
-		  static uint16_t data;
-		  static uint16_t interupt;
-		  static uint16_t info;
-		  static uint16_t als;
-
-		  //data  = readCommand(0x08);
-		  //als = readCommand(0x09);
-		  //interupt = readCommand(0x0B);
-		  info = readSensor(0x0C);
-		  HAL_Delay(2000);
-	  }
-
-	  //ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, buf[0], 1, HAL_MAX_DELAY);
-
-	  /*while(1)
-	  {
-		  ret = HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, buf, 2, HAL_MAX_DELAY);
-		  if(ret != HAL_OK){
-
-		  }else{
-		  }
-
-		  //send_command_vcnl4040(0x0C);
-		 // HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, data, sizeof(uint8_t), HAL_MAX_DELAY);
-		  HAL_Delay(2000);
-	  }*/
-
-
-	  /*
-	   * Testfunction for I2C-2 with Raspberry Pi Zero W
-	   */
-	  //uint8_t cnt = 0;
-	  //snprintf(text, sizeof(text), "Test: %d", cnt++);
-
-	 /* while(1){
-		  ret = HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &cnt,1, HAL_MAX_DELAY);
-		  HAL_Delay(200);
-		  cnt++;
-	  }*/
-
-
-
-	  /*
-	   * PWM
-	   */
-	  //HAL_Delay(100);
-	  //if(pwm_value == 0) step = 100;
-	  //if(pwm_value == 2000) step = -100;
-	  //pwm_value += step;
-	  //user_pwm_setvalue(pwm_value);
-
-
-	  //Prescale of PWM: 1000 -> ~8kHz
-	  /*while (CH1_DC < 2000)
-		{
-			TIM1->CCR4 = CH1_DC;
-			CH1_DC += 10;
-			HAL_Delay(100);
-		}
-		while(CH1_DC > 0)
-		{
-			TIM1->CCR4 = CH1_DC;
-			CH1_DC -= 10;
-			HAL_Delay(100);
-		}*/
-	  /*/
-	   * OLED
-	   */
-	  /*static int n = 0;
-	  snprintf(text, sizeof(text), "Test: %d", n++);
-	  oled_print(text, 1, Black);
-
-
-	   * VCNL4040
-	   */
-	  //get Proximity
-	  /*
-	  prox = getProximity();
-	  snprintf(text, sizeof(text), "Dist: %d", prox);
-	  oled_print(text, 2, Black);
-	  */
-
-
-
-	  //HAL_Delay(2000);
-
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -282,7 +171,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -309,12 +197,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C1;
-  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_SYSCLK;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
@@ -369,52 +251,6 @@ static void MX_ADC_Init(void)
   /* USER CODE BEGIN ADC_Init 2 */
 
   /* USER CODE END ADC_Init 2 */
-
-}
-
-/**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x1050DDFF;
-  hi2c1.Init.OwnAddress1 = 192;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_DISABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -553,7 +389,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_11, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_11
+                          |GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PC0 PC1 PC2 PC3
                            PC4 */
@@ -570,104 +407,36 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PB8 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
-void init_vcnl4040(void){
-	//if (getID() != 0x0186) return (false); //Check default ID value
-	setLEDCurrent(50); //Max IR LED current
-	setIRDutyCycle(40); //Set to highest duty cycle
-	setProxIntegrationTime(8); //Set to max integration
-	setProxResolution(16); //Set to 16-bit output
-	enableSmartPersistance(); //Turn on smart presistance
-	powerOnProximity(); //Turn on prox sensing
-
-	 //send_command_vcnl4040(VCNL4040_ADDR,VCNL4040_PS_CONF2,(0b00001011)<<8); //enable 16-bit PS
-	 //Default -> more to add for specific funcions
-}
-
-HAL_StatusTypeDef send_command_vcnl4040(uint8_t address, uint8_t command, uint16_t data){
-	static uint8_t buf[4];
-	buf[0] = address&0x01;
-	buf[1] = command;
-	buf[2] = data;
-	return(HAL_I2C_Master_Transmit(&hi2c1, address, buf ,4, HAL_MAX_DELAY));
-}
-
-
-int32_t readSensor(uint8_t commandCode)
-{
-	uint8_t data[2]={commandCode, VCNL4040_ADDR + 1};
-
-	//HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, data, 2, HAL_MAX_DELAY);
-	HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(&hi2c1, VCNL4040_ADDR, commandCode, 2, data, 2, HAL_MAX_DELAY);
-	//HAL_I2C_Mem_Write(&hi2c1, VCNL4040_ADDR, commandCode, uint, pData, Size, Timeout)
-
-   if (ret != HAL_OK) //Send a restart command. Do not release bus.
-    {
-      return (0); //Sensor did not ACK
-    }
-    ret = HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, data, 2, HAL_MAX_DELAY);
-    if(ret == HAL_OK)
-    {
-    	return((data[1]<<8) + data[0]);
-    }
-     return (-1); //Sensor did not respond
-}
-
-bool writeCommand(uint8_t commandCode, uint16_t value)
-{
-	uint8_t	LSB =  (value & 0xFF);
-	uint8_t MSB = (value >> 8);
-	return (writeCommands(commandCode, LSB, MSB));
-}
-
-bool writeCommands(uint8_t commandCode, uint8_t lowbyte, uint8_t highbyte)
-{
-	static HAL_StatusTypeDef ret;
-	//uint8_t	LSB =  lowbyte;
-	//uint8_t MSB = highbyte;
-	static uint8_t data[3];
-	data[0] = commandCode;
-	data[1] = lowbyte;
-	data[2] = highbyte;
-
-   ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, data, 3, HAL_MAX_DELAY);
-   //ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, data, 2, HAL_MAX_DELAY);
-   //ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &MSB, 1, HAL_MAX_DELAY);
-   //HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &commandCode, 1, HAL_MAX_DELAY);
-   if(ret != HAL_OK){
-	   return (false); //Sensor did not ACK
-   }
-   return true;
-}
-
-
-
-
-void read_data_vcnl4040(uint8_t address, uint8_t command){
-	//static uint8_t buf[3];
-	//buf[0] = address&0x01;
-	//buf[1] = command;
-	//buf[2] = address&0x01;
-	//HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, pData, 1, HAL_MAX_DELAY)
-}
-
-
-void user_pwm_setvalue(uint16_t value)
-{
-
-}
-
-void oled_print(char text[], uint32_t line, SSD1306_COLOR color){
-	  ssd1306_SetCursor(OLED_BORDER_OFFSET, (line-1)*OLED_LINE_HEIGHT+OLED_BORDER_OFFSET);
-	  ssd1306_WriteString(text,  Font_6x8, color);
-	  ssd1306_UpdateScreen();
-}
-
-
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

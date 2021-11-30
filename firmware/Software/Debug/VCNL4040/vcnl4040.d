@@ -1,3 +1,0 @@
-VCNL4040/vcnl4040.o: ../VCNL4040/vcnl4040.c ../VCNL4040/vcnl4040.h
-
-../VCNL4040/vcnl4040.h:
