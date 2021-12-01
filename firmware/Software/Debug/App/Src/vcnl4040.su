@@ -1,0 +1,2 @@
+vcnl4040.c:18:6:writeCommands	24	static
+vcnl4040.c:40:9:readSensor	16	static

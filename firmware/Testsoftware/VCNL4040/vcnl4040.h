@@ -156,7 +156,7 @@ bool isAway(); //Interrupt flag: True if prox value lower than low threshold
 bool isLight(); //Interrupt flag: True if ALS value higher than high threshold
 bool isDark(); //Interrupt flag: True if ALS value lower than low threshold
 
-uint16_t readCommand(uint8_t commandCode);
+uint16_t readSensor(uint8_t commandCode);
 uint8_t readCommandLower(uint8_t commandCode);
 uint8_t readCommandUpper(uint8_t commandCode);
 

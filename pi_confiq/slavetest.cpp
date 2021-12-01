@@ -1,6 +1,8 @@
 #include <pigpio.h>
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
  const char *path="/var/www/html/pro3e/webinterface/weight.txt";
