@@ -153,7 +153,7 @@ Options -MultiViews
   # Data interchange
 
     AddType application/atom+xml                        atom
-    AddType application/json                            json map topojson
+    AddType application/json                            .json map topojson
     AddType application/ld+json                         jsonld
     AddType application/rss+xml                         rss
     AddType application/geo+json                        geojson
