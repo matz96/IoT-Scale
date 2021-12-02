@@ -1,4 +1,4 @@
-#include <pigpio.h>
+ MyFile.open (path, ios::out | ios::trunc);#include <pigpio.h>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -39,17 +39,20 @@ void runSlave() {
             bscXfer(&xfer);
             if(xfer.rxCnt > 0) {
                 cout << "Received " << xfer.rxCnt << " bytes: ";
+		
+		 MyFile.open (path, ios::out | ios::trunc);
                 for(int i = 0; i < xfer.rxCnt; i++){
-                    ofstream MyFile;
-                    MyFile.open (path, ios::out | ios::trunc);
-                    MyFile << xfer.rxBuf[i];
-		            cout<<xfer.rxBuf[i];//used for testing
-                    MyFile.close();
+                     
+                    MyFile << xfer.rxBuf[i];	  
+		    cout << xfer.rxBuf[i];//used for testing
+                 
                    }
-              
+
+ 
+		 MyFile.close();
 		cout<< "\n";      
             }
-            sleep(2000);
+           // sleep(2000);
             
             //if (xfer.rxCnt > 0){
             //    cout << xfer.rxBuf;
