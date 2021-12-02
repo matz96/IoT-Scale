@@ -1,19 +1,21 @@
- MyFile.open (path, ios::out | ios::trunc);#include <pigpio.h>
+MyFile.open(path, ios::out | ios::trunc);
+#include <pigpio.h>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
 #include <time.h>
 
 using namespace std;
- const char *path="/var/www/html/pro3e/webinterface/weight.txt";
+const char *path = "/var/www/html/pro3e/webinterface/weight.txt";
 void runSlave();
 //void closeSlave();
 int getControlBits(int, bool);
 
 const int slaveAddress = 0x03; // <-- Your address of choice
-bsc_xfer_t xfer; // Struct to control data flow
+bsc_xfer_t xfer;               // Struct to control data flow
 
-int main(){
+int main()
+{
     // Chose one of those two lines (comment the other out):
     runSlave();
     //closeSlave();
@@ -21,7 +23,8 @@ int main(){
     return 0;
 }
 
-void runSlave() {
+void runSlave()
+{
     gpioInitialise();
     cout << "Initialized GPIOs\n";
     // Close old device (if any)
@@ -30,35 +33,37 @@ void runSlave() {
     // Set I2C slave Address to 0x0A
     xfer.control = getControlBits(slaveAddress, true);
     int status = bscXfer(&xfer); // Should now be visible in I2C-Scanners
-    
+
     if (status >= 0)
     {
         cout << "Opened slave\n";
         xfer.rxCnt = 0;
-        while(1){
+        while (1)
+        {
             bscXfer(&xfer);
-            if(xfer.rxCnt > 0) {
+            if (xfer.rxCnt > 0)
+            {
                 cout << "Received " << xfer.rxCnt << " bytes: ";
-		
-		 MyFile.open (path, ios::out | ios::trunc);
-                for(int i = 0; i < xfer.rxCnt; i++){
-                     
-                    MyFile << xfer.rxBuf[i];	  
-		    cout << xfer.rxBuf[i];//used for testing
-                 
-                   }
+                ofstream MyFile;
+                MyFile.open(path, ios::out | ios::trunc);
+                for (int i = 0; i < xfer.rxCnt; i++)
+                {
 
- 
-		 MyFile.close();
-		cout<< "\n";      
+                    MyFile << xfer.rxBuf[i];
+                    cout << xfer.rxBuf[i]; //used for testing
+                }
+
+                MyFile.close();
+                cout << "\n";
             }
-           // sleep(2000);
-            
+            // sleep(2000);
+
             //if (xfer.rxCnt > 0){
             //    cout << xfer.rxBuf;
             //}
+        }
     }
-    }else
+    else
         cout << "Failed to open slave!!!\n";
 }
 
@@ -84,8 +89,8 @@ void runSlave() {
     cout << "Terminated GPIOs.\n";
 }*/
 
-
-int getControlBits(int address /* max 127 */, bool open) {
+int getControlBits(int address /* max 127 */, bool open)
+{
     /*
     Excerpt from http://abyz.me.uk/rpi/pigpio/cif.html#bscXfer regarding the control bits:
 
@@ -115,7 +120,7 @@ int getControlBits(int address /* max 127 */, bool open) {
     // Flags like this: 0b/*IT:*/0/*HC:*/0/*TF:*/0/*IR:*/0/*RE:*/0/*TE:*/0/*BK:*/0/*EC:*/0/*ES:*/0/*PL:*/0/*PH:*/0/*I2:*/0/*SP:*/0/*EN:*/0;
 
     int flags;
-    if(open)
+    if (open)
         flags = /*RE:*/ (1 << 9) | /*TE:*/ (1 << 8) | /*I2:*/ (1 << 2) | /*EN:*/ (1 << 0);
     else // Close/Abort
         flags = /*BK:*/ (1 << 7) | /*I2:*/ (0 << 2) | /*EN:*/ (0 << 0);
