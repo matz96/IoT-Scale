@@ -1,4 +1,3 @@
-MyFile.open(path, ios::out | ios::trunc);
 #include <pigpio.h>
 #include <iostream>
 #include <fstream>
@@ -46,7 +45,7 @@ void runSlave()
                 cout << "Received " << xfer.rxCnt << " bytes: ";
                 ofstream MyFile;
                 MyFile.open(path, ios::out | ios::trunc);
-                for (int i = 0; i < xfer.rxCnt; i++)
+                for (int i = 0; i < xfer.rxCnt-1  ; i++)
                 {
 
                     MyFile << xfer.rxBuf[i];
