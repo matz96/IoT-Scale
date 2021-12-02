@@ -45,15 +45,17 @@ void runSlave()
             {
                 cout << "Received " << xfer.rxCnt << " bytes: ";
                 ofstream MyFile;
-                MyFile.open(path, ios::out | ios::trunc);
+                MyFile.open(path, ios::trunc);
+                MyFile.close();
                 for (int i = 0; i < xfer.rxCnt; i++)
                 {
-
+                    MyFile.open(path, ios::out);
+                   
                     MyFile << xfer.rxBuf[i];
                     cout << xfer.rxBuf[i]; //used for testing
+                     MyFile.close();
                 }
 
-                MyFile.close();
                 cout << "\n";
             }
             // sleep(2000);
