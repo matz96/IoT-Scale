@@ -1,6 +1,9 @@
-app_main.c:35:6:app_main	16	static
-app_main.c:46:13:MainTask	48	static
-app_main.c:60:13:I2CTask	16	static
-app_main.c:72:13:I2C2Task	40	static
-app_main.c:87:13:ReglerISTTask	16	static
-app_main.c:95:6:user_pwm_setvalue	16	static
+app_main.c:48:6:app_main	40	static
+app_main.c:69:6:TIM7_IRQHandler	16	static
+app_main.c:81:13:MainTask	48	static
+app_main.c:107:13:I2CTask	16	static
+app_main.c:119:13:I2C2Task	40	static
+app_main.c:134:13:ReglerISTTask	16	static
+app_main.c:152:13:user_pwm_setvalue	32	static
+app_main.c:165:13:calc_weight	16	static
+app_main.c:169:6:EXTI2_3_IRQHandler	8	static

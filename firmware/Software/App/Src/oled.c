@@ -15,6 +15,7 @@ void oled_init(){
 	ssd1306_Init();
 	ssd1306_SetDisplayOn(1);
 	ssd1306_Fill(White);
+	OLEDSemaphore = xSemaphoreCreateBinary();
 }
 
 int oled_printf (uint32_t line, SSD1306_COLOR color,const char *fmt, ...){

@@ -40,7 +40,8 @@ App/Src/app_main.o: ../App/Src/app_main.c ../App/Inc/app_main.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
  ../ssd1306/ssd1306.h ../ssd1306/ssd1306_conf.h \
- ../ssd1306/ssd1306_fonts.h ../App/Inc/oled.h ../App/Inc/piregler.h
+ ../ssd1306/ssd1306_fonts.h ../App/Inc/oled.h ../App/Inc/piregler.h \
+ ../App/Inc/vcnl4040.h
 
 ../App/Inc/app_main.h:
 
@@ -133,3 +134,5 @@ App/Src/app_main.o: ../App/Src/app_main.c ../App/Inc/app_main.h \
 ../App/Inc/oled.h:
 
 ../App/Inc/piregler.h:
+
+../App/Inc/vcnl4040.h:

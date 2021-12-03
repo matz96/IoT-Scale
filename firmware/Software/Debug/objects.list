@@ -1,5 +1,4 @@
 "./App/Src/app_main.o"
-"./App/Src/i2c1.o"
 "./App/Src/oled.o"
 "./App/Src/piregler.o"
 "./App/Src/vcnl4040.o"

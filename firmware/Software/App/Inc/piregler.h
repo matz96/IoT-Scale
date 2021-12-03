@@ -13,6 +13,7 @@
 #include <stddef.h>
 
 typedef struct piregler{
+	float idlevalue;
 	float val;
 	float kp;
 	float mem;
@@ -23,7 +24,7 @@ typedef struct piregler{
 	float ts;
 }S_piregler;
 
-void piregler_init(S_piregler *me, float val, float kp, float mem, float tn, float low, float high, float bias, float ts);
+void piregler_init(S_piregler *me,float idlevalue, float val, float kp, float mem, float tn, float low, float high, float bias, float ts);
 float ctl_pi(S_piregler *me);
 #endif /* PIREGLER_H_ */
 
