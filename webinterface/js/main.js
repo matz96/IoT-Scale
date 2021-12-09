@@ -10,6 +10,6 @@ $(document).ready(function(){
  document.getElementById('frmFile').onload =
  readFile( "./weight.txt", "utf-8", (err,data) =>{
    if(err) throw err;
-   data.toString();
+   log.console(data.toString());
  })
 
