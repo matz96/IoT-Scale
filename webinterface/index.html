@@ -2,7 +2,7 @@
 <html class="no-js" lang="">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh" content="1">
+  <!--meta http-equiv="refresh" content="1"-->
   <title>Anzeige</title>
 
   <meta name="description" content="Waage">
@@ -16,6 +16,7 @@
   <link rel="manifest" href="site.webmanifest">
   <link rel="apple-touch-icon" href="img/Logo_FHNW.svg.png">
   <link rel="icon" href="img/Logo_FHNW.svg.png">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
   <!-- Place favicon.ico in the root directory -->
 
@@ -73,7 +74,8 @@
         </div>
         <div class="txt_out">
           <p id="weight">
-            <embed src ="weight.txt">
+            <iframe id="frmFile" src="weight.txt" onload="LoadFile();" style="display: none;"></iframe>
+            <!--embed src ="weight.txt"-->
           </p>
           
           

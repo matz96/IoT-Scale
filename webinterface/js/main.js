@@ -1,7 +1,23 @@
-//import weight from "./weight.json";
 
-//document.getElementById('weight').innerHTML = JSON.parse(weight);
 
- document.getElementById('weight').fetch("./weight.json").then(function(resp){
-     return resp.json();
- }).then(function(data){console.log(data);});
+$(document).ready(function(){
+  $("button").click(function(){
+    $("#div1").load("demo_test.txt");
+  });
+});
+
+
+function LoadFile() {
+    var oFrame = document.getElementById("frmFile");
+    var strRawContents = oFrame.contentWindow.document.body.childNodes[0].innerHTML;
+    while (strRawContents.indexOf("\r") >= 0)
+        strRawContents = strRawContents.replace("\r", "");
+    var arrLines = strRawContents.split("\n");
+    alert("File " + oFrame.src + " has " + arrLines.length + " lines");
+    for (var i = 0; i < arrLines.length; i++) {
+        var curLine = arrLines[i];
+        alert("Line #" + (i + 1) + " is: '" + curLine + "'");
+    }
+}
+
+
