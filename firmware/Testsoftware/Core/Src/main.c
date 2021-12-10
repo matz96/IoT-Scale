@@ -151,10 +151,11 @@ int main(void)
   uint8_t buf[12];
 
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
 
-  //ssd1306_Init();
-  //ssd1306_SetDisplayOn(1);
-  //ssd1306_Fill(White);
+  ssd1306_Init();
+  ssd1306_SetDisplayOn(1);
+  ssd1306_Fill(White);
   CH1_DC = 10;
   /* USER CODE END 2 */
 
@@ -171,7 +172,7 @@ int main(void)
 
 
 
-	  buf[0] = 0x08;
+	  /*buf[0] = 0x08;
 	  // Init register of VCNL4040
 		writeCommands(0x04, 0b00010010, 0b00000111); // PS_CONF3_L & PS_MS
 		writeCommands(0x03, 0b11001110, 0b00001000); // PS_CONF1_L & PS_CONF2_H
@@ -195,7 +196,7 @@ int main(void)
 		  }*/
 
 		  //read back config registers
-
+	  /*
 		  data  = readSensor(0x08);
 		  //als = readSensor(0x09);
 		  //interupt = readSensor(0x0B);
@@ -259,11 +260,11 @@ int main(void)
 	  /*/
 	   * OLED
 	   */
-	  /*static int n = 0;
+	  static int n = 0;
 	  snprintf(text, sizeof(text), "Test: %d", n++);
 	  oled_print(text, 1, Black);
 
-
+/*
 	   * VCNL4040
 	   */
 	  //get Proximity
@@ -275,7 +276,7 @@ int main(void)
 
 
 
-	  //HAL_Delay(2000);
+	  HAL_Delay(2000);
 
 
     /* USER CODE END WHILE */

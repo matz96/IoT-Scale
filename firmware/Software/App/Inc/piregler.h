@@ -22,6 +22,7 @@ typedef struct piregler{
 	float high;
 	float bias;
 	float ts;
+	float error;
 }S_piregler;
 
 void piregler_init(S_piregler *me,float idlevalue, float val, float kp, float mem, float tn, float low, float high, float bias, float ts);
