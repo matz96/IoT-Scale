@@ -1,4 +1,4 @@
-import { readFile } from 'fs';
+import { readFile } from './fs';
 
 $(document).ready(function(){
   $("button").click(function(){
