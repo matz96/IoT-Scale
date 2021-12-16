@@ -13,10 +13,10 @@ $(document).ready(function(){
    log.console(data.toString());
  })
 */
-document.querySelector("#download-file").addEventListener(onload, async function() {
+document.querySelector("#txt_out").addEventListener(onload, async function() {
 	try {
 		let text_data = await downloadFile();
-		document.querySelector("weight").textContent = text_data;
+		document.querySelector("#weight").textContent = text_data;
 	}
 	catch(e) {
 		alert(e.message);
