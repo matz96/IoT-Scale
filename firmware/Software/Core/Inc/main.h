@@ -56,7 +56,8 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void ADC_Select_CH0 (void);
+void ADC_Select_CH3 (void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

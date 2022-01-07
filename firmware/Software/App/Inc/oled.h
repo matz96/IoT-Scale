@@ -19,8 +19,10 @@
 
 #define OLED_BORDER_OFFSET 5
 #define OLED_LINE_HEIGHT 10
+//#define OLED_LINE_HEIGHT 30 Final
 
 void oled_init();
+int oled_printlegend (void);
 int oled_printf (uint32_t line, SSD1306_COLOR color,const char *__restrict, ...);
 
 SemaphoreHandle_t OLEDSemaphore;

@@ -28,7 +28,7 @@ bool writeVCNL4040(uint8_t addr, uint8_t command, uint8_t lowbyte, uint8_t highb
 	data[0] = command;
 	data[1] = lowbyte;
 	data[2] = highbyte;
-	if(xSemaphoreTake(I2CSemaphore,1000) == pdTRUE){
+	if(xSemaphoreTake(I2CSemaphore,200) == pdTRUE){
 		ret = HAL_I2C_Master_Transmit(&hi2c1, addr, data, 3, HAL_MAX_DELAY);
 		xSemaphoreGive(I2CSemaphore);
 	}
@@ -42,7 +42,7 @@ int32_t readVCNL4040(uint8_t addr, uint8_t command){
 	HAL_StatusTypeDef ret;
 	uint16_t MemoryAdresse = (command<<8) + (addr+1);
 	uint8_t databuf[2] = {0x00, 0x00};
-	if(xSemaphoreTake(I2CSemaphore,1000) == pdTRUE){
+	if(xSemaphoreTake(I2CSemaphore,200) == pdTRUE){
 		ret = HAL_I2C_Mem_Read(&hi2c1, addr, MemoryAdresse, 2, databuf, 2, HAL_MAX_DELAY);
 		xSemaphoreGive(I2CSemaphore);
 	}

@@ -129,8 +129,9 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
   HAL_TIM_Base_Start(&htim6);
   HAL_TIM_Base_Start_IT(&htim7);
-  HAL_ADC_Start(&hadc);
-  HAL_ADC_PollForConversion(&hadc, HAL_MAX_DELAY);
+  HAL_ADC_Init(&hadc);
+  HAL_ADCEx_Calibration_Start(&hadc);
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -279,9 +280,16 @@ static void MX_ADC_Init(void)
   }
   /** Configure for the selected ADC regular channel to be converted.
   */
-  sConfig.Channel = ADC_CHANNEL_0;
+  /*sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
   sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  /*sConfig.Channel = ADC_CHANNEL_3;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -308,7 +316,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00B0DBFF;
+  hi2c1.Init.Timing = 0x00401A58;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -535,8 +543,8 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_11, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PC0 PC1 PC4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4;
+  /*Configure GPIO pins : PC0 PC1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -557,6 +565,31 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void ADC_Select_CH0 (void)
+{
+	ADC_ChannelConfTypeDef sConfig = {0};
+	sConfig.Channel = ADC_CHANNEL_0;
+	sConfig.Rank = 1;
+	sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+	if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+}
+
+void ADC_Select_CH3 (void)
+{
+	ADC_ChannelConfTypeDef sConfig = {0};
+	sConfig.Channel = ADC_CHANNEL_3;
+	sConfig.Rank = 1;
+	sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+	if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+}
+
 
 /* USER CODE END 4 */
 

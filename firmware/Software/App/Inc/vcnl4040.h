@@ -12,6 +12,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+//VCNL4040 Bus-Adress
+#define VCNL4040_ADDR (0x60<<1) //7-bit addres
+
 //VCNL4040 Command Codes
 #define VCNL4040_ALS_CONF 0x00
 #define VCNL4040_ALS_THDH 0x01

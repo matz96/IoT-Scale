@@ -17,15 +17,14 @@ typedef struct piregler{
 	float val;
 	float kp;
 	float mem;
-	float tn;
+	float ki;
 	float low;
 	float high;
-	float bias;
 	float ts;
 	float error;
 }S_piregler;
 
-void piregler_init(S_piregler *me,float idlevalue, float val, float kp, float mem, float tn, float low, float high, float bias, float ts);
+void piregler_init(S_piregler *me,float idlevalue, float val, float kp, float mem, float ki, float low, float high, float ts);
 float ctl_pi(S_piregler *me);
 #endif /* PIREGLER_H_ */
 

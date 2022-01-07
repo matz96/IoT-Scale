@@ -5,6 +5,7 @@
  */
 
 #include "app_main.h"
+#include "main.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include "FreeRTOS.h"
@@ -16,31 +17,17 @@
 #include "piregler.h"
 #include "vcnl4040.h"
 
-#define PWM_MAX_VAL 2000
-#define PWM_MIN_VAL 0
 
-#define IDLE_VALUE 16500
-#define KP 5
-#define TN 0.002 //2ms
-#define LOW 14470
-#define HIGH 1000
-#define BIAS 0
-#define TS 0.002
-
-#define CONVERSION_GR_OZ  0.035274
-
-#define BTN_TARA GPIO_PIN_10
-#define BTN_UINT GPIO_PIN_11
-
-static void I2CTask(void *pvParameters);
 static void I2C2Task(void *pvParameters);
 static void MainTask(void *pvParameters);
 static void ReglerISTTask(void *pvParameters);
 
+static void ADCTestTask(void *pvParameters);
+
 static void user_pwm_setvalue(float value);
 static void calc_weight(uint16_t value);
-static void EXTI2_3_IRQHandler(uint16_t GPIO_PIN);
-static void readCurrent(void);
+static uint32_t readCurrent(void);
+static uint32_t readTemp(void);
 
 extern ADC_HandleTypeDef hadc;
 
@@ -48,28 +35,23 @@ S_piregler piregler;
 SemaphoreHandle_t ReglerSemaphore;
 SemaphoreHandle_t DisplaySemaphore;
 SemaphoreHandle_t I2CSemaphore;
+
 bool unit_oz = false;
 uint32_t weight = 0;
 uint32_t tara = 0;
-int32_t dist = 0;
-uint32_t current = 0;
-int32_t pwm  = 0;
+int32_t pwm  = 0; //remove after testing
+int32_t dist = 0; //remove after testing
 
-
-void app_main(void)
-{
+void app_main(void){
 	I2CSemaphore = xSemaphoreCreateMutex();
 	ReglerSemaphore = xSemaphoreCreateBinary();
 	DisplaySemaphore = xSemaphoreCreateBinary();
 	xSemaphoreGive(ReglerSemaphore);
 	xSemaphoreGive(I2CSemaphore);
-	HAL_ADC_Init(&hadc);
-	HAL_ADC_Start(&hadc);
-
-	//xTaskCreate(I2CTask, "I2C-Task", (configMINIMAL_STACK_SIZE + 80), NULL, (tskIDLE_PRIORITY + 2), NULL);
+	xTaskCreate(ADCTestTask, "ADC-Task", (configMINIMAL_STACK_SIZE + 80), NULL, (tskIDLE_PRIORITY + 1), NULL);
 	//xTaskCreate(I2C2Task, "I2C2-Task", (configMINIMAL_STACK_SIZE + 80), NULL, (tskIDLE_PRIORITY + 1), NULL);
-	xTaskCreate(MainTask, "Main-Task", (configMINIMAL_STACK_SIZE + 80), NULL, (tskIDLE_PRIORITY + 2), NULL);
-	xTaskCreate(ReglerISTTask, "Regler-Task", (configMINIMAL_STACK_SIZE + 80), NULL, (tskIDLE_PRIORITY + 2), NULL);
+	//xTaskCreate(MainTask, "Main-Task", (configMINIMAL_STACK_SIZE + 80), NULL, (tskIDLE_PRIORITY + 1), NULL);
+	//xTaskCreate(ReglerISTTask, "Regler-Task", (configMINIMAL_STACK_SIZE + 80), NULL, (tskIDLE_PRIORITY + 2), NULL);
 	vTaskStartScheduler();
 	/* The FreeRTOS scheduler should never return to here, except on out of memory at creating the idle task! */
 	for (;;) ;
@@ -90,11 +72,45 @@ void TIM7_IRQHandler(void){
 	TIM7->SR = ~TIM_IT_UPDATE;
 }
 
+/*
+ * Read the button
+ */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if(GPIO_Pin == BTN_TARA){
+			tara = weight;
+		}
+	if(GPIO_Pin == BTN_UINT){
+			unit_oz =!unit_oz;
+	}
+}
 
+/**
+ * Task for testing ADC
+ */
+static void ADCTestTask(__attribute__ ((unused)) void *pvParameters)
+{
+
+	uint32_t current = 0;
+	uint32_t temp = 0;
+	while (1) {
+		current = readCurrent();
+		temp = readTemp();
+		HAL_Delay(200);
+	}
+}
+
+
+/*
+ *
+ */
 static void MainTask(__attribute__ ((unused)) void *pvParameters)
 {
+	HAL_Delay(200);
 	oled_init();
 	char text[20];
+	uint32_t current = 0;
+	uint32_t temp = 0;
 	while (1) {
 		if(xSemaphoreTake(DisplaySemaphore, 100) == pdTRUE){
 			if(unit_oz){
@@ -102,7 +118,7 @@ static void MainTask(__attribute__ ((unused)) void *pvParameters)
 				ounce = (float)(weight-tara) * CONVERSION_GR_OZ;
 				snprintf(text, sizeof(text), "Gew.: %3d oz", (int)ounce);
 			}else{
-				snprintf(text, sizeof(text), "Gew.: %3d gr", (int)(weight-tara));
+				snprintf(text, sizeof(text), "Gew.: %3d g", (int)(weight-tara));
 			}
 			oled_printf(1, Black, text);
 			snprintf(text, sizeof(text), "Dist:");
@@ -117,25 +133,17 @@ static void MainTask(__attribute__ ((unused)) void *pvParameters)
 			oled_printf(6, Black, text);
 			snprintf(text, sizeof(text), "%06d", (int)pwm);
 			oled_printf(7, Black, text);
-			HAL_Delay(200);
+			snprintf(text, sizeof(text), "Temp:");
+			oled_printf(8, Black, text);
+			snprintf(text, sizeof(text), "%06d", (int)temp);
+			oled_printf(9, Black, text);
+			current = readCurrent();
+			temp = readTemp();
+			HAL_Delay(500);
 		}
 	}
+}
 
-}
-/**
- * Task can be deleted in final version. Only used for testing.
- */
-static void I2CTask(__attribute__ ((unused)) void *pvParameters)
-{
-	static int32_t data = 0;
-	initVCNL4040(0x60<<1);
-	while (1) {
-		// getID (0x0C): 0x0186 expected!! <- can be used for testing
-		data = readVCNL4040(0x60<<1, 0x08);
-		xSemaphoreGive(DisplaySemaphore);
-		HAL_Delay(2000);
-	}
-}
 
 /**
  * Task for communication over I2C with Raspberry Pi Zero W (over second i2c interface)
@@ -144,7 +152,6 @@ static void I2C2Task(__attribute__ ((unused)) void *pvParameters)
 {
 	//Write to RP over I2C2
 	extern I2C_HandleTypeDef hi2c2;
-	const uint8_t RPZERO_ADDR = 0x03<<1;
 	uint8_t cnt = 0;
 	//snprintf(text, sizeof(text), "Test: %d", cnt++);
 	while (1) {
@@ -160,25 +167,18 @@ static void I2C2Task(__attribute__ ((unused)) void *pvParameters)
 static void ReglerISTTask(__attribute__ ((unused)) void *pvParameters)
 {
 	initVCNL4040(0x60<<1);
-	piregler_init(&piregler, IDLE_VALUE, 0,KP , 0, TN, LOW, HIGH, BIAS, TS);
-	static int32_t data = 0;
+	int32_t idle_value = readVCNL4040(VCNL4040_ADDR, (VCNL4040_PS_DATA)) - START_DIST_OFFEST;
+	piregler_init(&piregler, idle_value, 0,KP , 0, KI, LOW, HIGH, TS);
 	while (1) {
 		if(xSemaphoreTake(ReglerSemaphore,100) == pdTRUE){
-			data = readVCNL4040(0x60<<1, (0x08));
-			data  &= 0xFFFC; //Anti toggle
-			dist = data;
-			readCurrent();
-			//dist = IDLE_VALUE-data; //inv
-			piregler.val = (float)data;
+			piregler.val = (float)dist;
 			user_pwm_setvalue(ctl_pi(&piregler));
-			//user_pwm_setvalue(dist);
-			//user_pwm_setvalue(ctl_pi(&piregler)); //0 -2000
-
-			xSemaphoreGive(DisplaySemaphore); //Call DisplayTask
+			dist = readVCNL4040(VCNL4040_ADDR, (VCNL4040_PS_DATA));
+			xSemaphoreGive(DisplaySemaphore);
 		}
-		HAL_Delay(20);
 	}
 }
+
 
 /**
  * Set dutycyle of PWM-Output
@@ -186,8 +186,8 @@ static void ReglerISTTask(__attribute__ ((unused)) void *pvParameters)
  */
 static void user_pwm_setvalue(float value)
 {
-	static int32_t pwmvalue = 1000;
-	pwmvalue = pwmvalue - (value/1000);
+	static int32_t pwmvalue = PWM_MAX_VAL/2;
+	pwmvalue = pwmvalue - (value/2000);
 	if(pwmvalue > PWM_MAX_VAL){
 		pwmvalue = PWM_MAX_VAL;
 	}
@@ -198,33 +198,41 @@ static void user_pwm_setvalue(float value)
 	pwm = pwmvalue;
 
 	TIM1->CCR4 = pwmvalue;
-	calc_weight(value);
 }
 
 /**
  * Read out ADC with the current value trough the FET
  */
-static void readCurrent(void){
-	current = HAL_ADC_GetValue(&hadc);
-	current = (1000*(float)current) / 4096;
+static uint32_t readCurrent(void){
+	ADC_Select_CH0();
+	HAL_ADC_Start(&hadc);
+	HAL_ADC_PollForConversion(&hadc, 1000);
+	uint32_t current = HAL_ADC_GetValue(&hadc);
+	HAL_ADC_Stop(&hadc);
+	current = (1000*(float)current) / ADC_MAX_VALUE; // Current in mA
+	calc_weight(current);
+	return(current);
 }
+
+
+/**
+ * Read out ADC with the current temperature from the magnet
+ */
+static uint32_t readTemp(void){
+	ADC_Select_CH3();
+	HAL_ADC_Start(&hadc);
+	HAL_ADC_PollForConversion(&hadc, 1000);
+	uint32_t temp = HAL_ADC_GetValue(&hadc);
+	temp = HAL_ADC_GetValue(&hadc);
+	HAL_ADC_Stop(&hadc);
+	temp = (1000*(float)temp) / ADC_MAX_VALUE;
+	return(temp);
+}
+
 
 /**
  * Calculation weight
  */
 static void calc_weight(uint16_t value){
 	weight = value;
-}
-
-/**
- * Interupt-Function for Button-Action
- */
-static void EXTI2_3_IRQHandler(uint16_t GPIO_PIN) {
-	//Input Taster and set unit and tara
-	if(GPIO_PIN == BTN_TARA){
-		tara = weight;
-	}
-	if(GPIO_PIN == BTN_UINT){
-		unit_oz =!unit_oz;
-	}
 }
