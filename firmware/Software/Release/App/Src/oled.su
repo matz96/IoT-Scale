@@ -1,0 +1,2 @@
+oled.c:17:6:oled_init	8	static
+oled.c:26:5:oled_printf	48	static

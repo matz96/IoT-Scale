@@ -151,10 +151,11 @@ int main(void)
   uint8_t buf[12];
 
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
 
-  //ssd1306_Init();
-  //ssd1306_SetDisplayOn(1);
-  //ssd1306_Fill(White);
+  ssd1306_Init();
+  ssd1306_SetDisplayOn(1);
+  ssd1306_Fill(White);
   CH1_DC = 10;
   /* USER CODE END 2 */
 
@@ -171,12 +172,14 @@ int main(void)
 
 
 
-	  buf[0] = 0x08;
+	  /*buf[0] = 0x08;
 	  // Init register of VCNL4040
-	  writeCommands(0x00, 0b11000001, 0b00000000); //ALS Conf
-	  writeCommands(0x03, 0b11111110, 0b00001000); // PS_CONF1_L & PS_CONF2_H
-	  writeCommands(0x04, 0b01101101, 0b10100111); // PS_CONF3_L & PS_MS
-	  writeCommands(0x06, 0x00, 0x00); //PS Threashold
+		writeCommands(0x04, 0b00010010, 0b00000111); // PS_CONF3_L & PS_MS
+		writeCommands(0x03, 0b11001110, 0b00001000); // PS_CONF1_L & PS_CONF2_H
+	 // writeCommands(0x04, 0b00001000, 0b00000111); // PS_CONF3_L & PS_MS
+	 // writeCommands(0x03, 0b11001111, 0b00001000); // PS_CONF1_L & PS_CONF2_H
+
+	  //writeCommands(0x06, 0x00, 0x00); //PS Threashold
 
 
 	  while(1){
@@ -185,9 +188,18 @@ int main(void)
 		  static uint16_t info;
 		  static uint16_t als;
 
-		  //data  = readCommand(0x08);
-		  //als = readCommand(0x09);
-		  //interupt = readCommand(0x0B);
+		  // write and read back
+		  /*while(1){
+			  static uint16_t test = 0;
+			  writeCommands(0x03, 0b11001110, 0b00001011);
+			  test = readSensor(0x03);
+		  }*/
+
+		  //read back config registers
+	  /*
+		  data  = readSensor(0x08);
+		  //als = readSensor(0x09);
+		  //interupt = readSensor(0x0B);
 		  info = readSensor(0x0C);
 		  HAL_Delay(2000);
 	  }
@@ -248,11 +260,11 @@ int main(void)
 	  /*/
 	   * OLED
 	   */
-	  /*static int n = 0;
+	  static int n = 0;
 	  snprintf(text, sizeof(text), "Test: %d", n++);
 	  oled_print(text, 1, Black);
 
-
+/*
 	   * VCNL4040
 	   */
 	  //get Proximity
@@ -264,7 +276,7 @@ int main(void)
 
 
 
-	  //HAL_Delay(2000);
+	  HAL_Delay(2000);
 
 
     /* USER CODE END WHILE */
@@ -597,20 +609,23 @@ HAL_StatusTypeDef send_command_vcnl4040(uint8_t address, uint8_t command, uint16
 
 int32_t readSensor(uint8_t commandCode)
 {
-	uint8_t data[2]={commandCode, VCNL4040_ADDR + 1};
 
+	uint16_t MemoryAdresse = (commandCode<<8) + (VCNL4040_ADDR+1);
+	uint8_t databuf[2] = {0x00, 0x00};
+
+	HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(&hi2c1, VCNL4040_ADDR, MemoryAdresse, 2, databuf, 2, HAL_MAX_DELAY);
 	//HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, data, 2, HAL_MAX_DELAY);
-	HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(&hi2c1, VCNL4040_ADDR, commandCode, 2, data, 2, HAL_MAX_DELAY);
+	//HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(&hi2c1, VCNL4040_ADDR, commandCode, 2, data, 2, HAL_MAX_DELAY);
 	//HAL_I2C_Mem_Write(&hi2c1, VCNL4040_ADDR, commandCode, uint, pData, Size, Timeout)
 
    if (ret != HAL_OK) //Send a restart command. Do not release bus.
     {
-      return (0); //Sensor did not ACK
+      return (-1); //Sensor did not ACK
     }
-    ret = HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, data, 2, HAL_MAX_DELAY);
+    //ret = HAL_I2C_Master_Receive(&hi2c1, VCNL4040_ADDR, data, 2, HAL_MAX_DELAY);
     if(ret == HAL_OK)
     {
-    	return((data[1]<<8) + data[0]);
+    	return((databuf[1]<<8) + databuf[0]);
     }
      return (-1); //Sensor did not respond
 }
@@ -632,6 +647,7 @@ bool writeCommands(uint8_t commandCode, uint8_t lowbyte, uint8_t highbyte)
 	data[1] = lowbyte;
 	data[2] = highbyte;
 
+	//HAL_I2C_MAster
    ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, data, 3, HAL_MAX_DELAY);
    //ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, data, 2, HAL_MAX_DELAY);
    //ret = HAL_I2C_Master_Transmit(&hi2c1, VCNL4040_ADDR, &MSB, 1, HAL_MAX_DELAY);

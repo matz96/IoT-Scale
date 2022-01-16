@@ -6,21 +6,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../App/Src/app_main.c \
-../App/Src/i2c1.c \
 ../App/Src/oled.c \
 ../App/Src/piregler.c \
 ../App/Src/vcnl4040.c 
 
 OBJS += \
 ./App/Src/app_main.o \
-./App/Src/i2c1.o \
 ./App/Src/oled.o \
 ./App/Src/piregler.o \
 ./App/Src/vcnl4040.o 
 
 C_DEPS += \
 ./App/Src/app_main.d \
-./App/Src/i2c1.d \
 ./App/Src/oled.d \
 ./App/Src/piregler.d \
 ./App/Src/vcnl4040.d 

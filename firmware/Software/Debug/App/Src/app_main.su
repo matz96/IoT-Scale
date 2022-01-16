@@ -1,6 +1,11 @@
-app_main.c:35:6:app_main	16	static
-app_main.c:46:13:MainTask	48	static
-app_main.c:60:13:I2CTask	16	static
-app_main.c:72:13:I2C2Task	40	static
-app_main.c:87:13:ReglerISTTask	16	static
-app_main.c:95:6:user_pwm_setvalue	16	static
+app_main.c:44:6:app_main	16	static
+app_main.c:62:6:TIM7_IRQHandler	16	static
+app_main.c:77:6:HAL_GPIO_EXTI_Callback	16	static
+app_main.c:90:13:ADCTestTask	24	static
+app_main.c:106:13:MainTask	56	static
+app_main.c:150:13:I2C2Task	40	static
+app_main.c:167:13:ReglerISTTask	56	static
+app_main.c:187:13:user_pwm_setvalue	24	static
+app_main.c:206:17:readCurrent	16	static
+app_main.c:221:17:readTemp	16	static
+app_main.c:236:13:calc_weight	16	static

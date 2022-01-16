@@ -1,2 +1,3 @@
-vcnl4040.c:18:6:writeCommands	24	static
-vcnl4040.c:40:9:readSensor	16	static
+vcnl4040.c:19:6:initVCNL4040	16	static
+vcnl4040.c:25:6:writeVCNL4040	32	static
+vcnl4040.c:41:9:readVCNL4040	56	static

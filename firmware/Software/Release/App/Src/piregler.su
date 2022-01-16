@@ -1,0 +1,2 @@
+piregler.c:15:6:piregler_init	0	static
+piregler.c:44:7:ctl_pi	32	static
