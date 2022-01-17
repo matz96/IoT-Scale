@@ -1,4 +1,4 @@
 piregler.c:15:6:piregler_init	24	static
 piregler.c:30:14:integrate	24	static
-piregler.c:41:14:limit	24	static
-piregler.c:49:7:ctl_pi	24	static
+piregler.c:42:14:limit	24	static
+piregler.c:50:7:ctl_pi	24	static

@@ -6,20 +6,36 @@
 
 #define ADC_MAX_VALUE 4096
 
-#define KP 25
-#define KI 30
+#define KP 8.5
+#define KI 4//2.2 //1.2 //15
 #define LOW 1820
 #define HIGH 2600
-#define BIAS 0
-#define TS 0.0002
+#define TS 0.005
 
-#define CONVERSION_GR_OZ  0.035274
+#define CONVERSION_GR_OZ  0.035274f
 
-#define BTN_TARA 4
-#define BTN_UINT 8
+#define BTN_TARA 8
+#define BTN_UINT 4
 
-#define START_DIST_OFFEST 10
+#define START_DIST_OFFSET 10
 #define RPZERO_ADDR  (0x03<<1)
+
+#define MAX_ADC_TIMEOUT 1000
+#define MAX_DELAY_REGLER_SEMAPHORE 100
+#define MAX_DELAY_DISPLAY_SEMAPHORE 200
+
+#define DISPLAY_REFRESH_TIMEOUT 200
+#define DISPLAY_START_DELAY 200
+#define DISPLAY_TEXT_LENGTH 20
+
+#define COVERTION_A_TO_MA 1000
+
+#define MAX_DELAY_RP_SEMAPHORE 100
+
+#define PWM_SCALER 1200
+#define PWM_START_VALUE (PWM_MAX_VAL/5)
+#define DISTANCE_SCALER 3
+
 
 void app_main(void);
 

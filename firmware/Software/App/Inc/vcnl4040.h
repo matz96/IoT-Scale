@@ -32,6 +32,8 @@
 #define VCNL4040_INT_FLAG 0x0B
 #define VCNL4040_ID 0x0C
 
+#define DELAY_MAX_I2C_VCNL4040 200
+
 void initVCNL4040(uint8_t addr);
 bool writeVCNL4040(uint8_t addr, uint8_t command, uint8_t lowbyte, uint8_t highbyte);
 int32_t readVCNL4040(uint8_t addr, uint8_t command);

@@ -30,6 +30,7 @@ void piregler_init(S_piregler *me, float idlevalue, float val, float kp,
 static float integrate(S_piregler *me) {
 	static float integral = 0;
 	integral  += me->ki*(((me->mem + me->error)/2)*me->ts);
+	integral = limit(integral,1000,-1000);
 	me->mem = me->error;
 	return integral;
 
