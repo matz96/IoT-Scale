@@ -19,11 +19,10 @@
 
 static void I2C2Task(void *pvParameters);
 static void MainTask(void *pvParameters);
-static void MainTask2(void *pvParameters);
 static void ReglerISTTask(void *pvParameters);
 
 static void user_pwm_setvalue(float value);
-static void calc_weight(uint16_t current, uint16_t temp);
+static void calc_weight(uint16_t current);
 static uint32_t readCurrent(void);
 static uint32_t readTemp(void);
 static uint32_t current_average(uint32_t current);
@@ -37,10 +36,8 @@ SemaphoreHandle_t I2CSemaphore;
 SemaphoreHandle_t RPSemaphore;
 
 bool unit_oz = false;
-uint32_t weight = 0;
 uint32_t tara = 0;
-int32_t pwm = 0; //remove after testing
-int32_t dist = 0; //remove after testing
+uint32_t weight = 0;
 
 void app_main(void) {	I2CSemaphore = xSemaphoreCreateMutex();
 	ReglerSemaphore = xSemaphoreCreateBinary();
@@ -87,7 +84,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 }
 
 /*
- *
+ * MainTask for Display weight and read out current and temperature
  */
 static void MainTask(__attribute__ ((unused)) void *pvParameters) {
 	HAL_Delay(DISPLAY_START_DELAY);
@@ -98,51 +95,16 @@ static void MainTask(__attribute__ ((unused)) void *pvParameters) {
 	while (1) {
 		if (xSemaphoreTake(DisplaySemaphore,
 				MAX_DELAY_DISPLAY_SEMAPHORE) == pdTRUE) {
-			if (unit_oz) {
-				static uint32_t ounce = 0;
-				ounce = (float) (weight - tara) * CONVERSION_GR_OZ;
-				snprintf(text, sizeof(text), "Gew.: %3d oz", (int) ounce);
-			} else {
-				snprintf(text, sizeof(text), "Gew.: %3d g",
-						(int) (weight - tara));
-			}
-			oled_printf(1, Black, text);
-			snprintf(text, sizeof(text), "weight:");
-			oled_printf(2, Black, text);
-			snprintf(text, sizeof(text), "%06d", (int) weight);
-			oled_printf(3, Black, text);
-			snprintf(text, sizeof(text), "Current:");
-			oled_printf(4, Black, text);
-			snprintf(text, sizeof(text), "%06d", (int) current);
-			oled_printf(5, Black, text);
-			snprintf(text, sizeof(text), "PWM-Value:");
-			oled_printf(6, Black, text);
-			snprintf(text, sizeof(text), "%06d", (int) pwm);
-			oled_printf(7, Black, text);
-			snprintf(text, sizeof(text), "Dist:");
-			oled_printf(8, Black, text);
-			snprintf(text, sizeof(text), "%06d", (int) dist);
-			oled_printf(9, Black, text);
-			current = current_average(readCurrent());
-			temp = readTemp();
-			calc_weight(current, temp);
-			HAL_Delay(500);
-		}
-	}
-}
 
-/*
- * MainTask for Display weight and read out current and temperature
- */
-static void MainTask2(__attribute__ ((unused)) void *pvParameters) {
-	HAL_Delay(DISPLAY_START_DELAY);
-	oled_init();
-	char text[DISPLAY_TEXT_LENGTH];
-	uint32_t current = 0;
-	uint32_t temp = 0;
-	while (1) {
-		if (xSemaphoreTake(DisplaySemaphore,
-				MAX_DELAY_DISPLAY_SEMAPHORE) == pdTRUE) {
+			current = readCurrent();
+			temp = readTemp();
+			calc_weight(current_average(current));
+
+			if(temp > MAX_TEMP_VALUE){
+				oled_printf(3, Black, "Remove weight");
+				oled_printf(4, Black, "Overheat!");
+			}
+
 			if (unit_oz) {
 				static int32_t ounce = 0;
 				ounce = ((int32_t) weight - tara) * CONVERSION_GR_OZ;
@@ -150,10 +112,8 @@ static void MainTask2(__attribute__ ((unused)) void *pvParameters) {
 			} else {
 				snprintf(text, sizeof(text), "%0.4dg", (int) (weight - tara));
 			}
-			oled_printf(1, Black, text);
-			current = readCurrent();
-			temp = readTemp();
-			calc_weight(current, temp);
+
+			oled_print_weight(Black, text);
 			xSemaphoreGive(RPSemaphore);
 			HAL_Delay(DISPLAY_REFRESH_TIMEOUT);
 		}
@@ -167,13 +127,14 @@ static void I2C2Task(__attribute__ ((unused)) void *pvParameters) {
 	//Write to RP over I2C2
 	extern I2C_HandleTypeDef hi2c2;
 	uint8_t cnt = 0;
-	//snprintf(text, sizeof(text), "Test: %d", cnt++);
+	char s[100];
 	while (1) {
 		if (xSemaphoreTake(RPSemaphore,
 				MAX_DELAY_RP_SEMAPHORE) == pdTRUE) {
-			HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &cnt, 1,
+			//data send in the follow order; weight,KP,KI ,LOW ,HIGH, TS, IdleValue
+			snprintf(s, sizeof(s),"%d,%d,%d,%d,%d,%d,%d",weight,piregler.kp,piregler.ki,piregler.low,piregler.high,piregler.ts, piregler.idlevalue);
+			HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &s, sizeof(s),
 					HAL_MAX_DELAY);
-			cnt++;
 		}
 	}
 }
@@ -182,10 +143,11 @@ static void I2C2Task(__attribute__ ((unused)) void *pvParameters) {
  * Interupt service task for PI-Controller
  */
 static void ReglerISTTask(__attribute__ ((unused)) void *pvParameters) {
+	int32_t dist = 0;
 	initVCNL4040(VCNL4040_ADDR); //Wegmesssensor initialisieren
-	int32_t idle_value = (DISTANCE_SCALER*readVCNL4040(VCNL4040_ADDR, (VCNL4040_PS_DATA)))
-			- START_DIST_OFFSET; //Read start distance
-	piregler_init(&piregler, idle_value, 0, KP, 0, KI, LOW, HIGH, TS); //PIRegler initialisieren
+	//int32_t idle_value = (DISTANCE_SCALER*readVCNL4040(VCNL4040_ADDR, (VCNL4040_PS_DATA)))
+		//	- START_DIST_OFFSET; //Read start distance
+	piregler_init(&piregler, IDLE_VALUE, 0, KP, 0, KI, LOW, HIGH, TS); //PIRegler initialisieren
 	while (1) {
 		if (xSemaphoreTake(ReglerSemaphore,MAX_DELAY_REGLER_SEMAPHORE) == pdTRUE) {
 			dist = readVCNL4040(VCNL4040_ADDR, (VCNL4040_PS_DATA)); //Read distance of sensor
@@ -210,9 +172,6 @@ static void user_pwm_setvalue(float value) {
 	if (pwmvalue <= PWM_MIN_VAL) {
 		pwmvalue = PWM_MIN_VAL;
 	}
-
-	pwm = pwmvalue; // Remove in final version
-
 	TIM1->CCR4 = pwmvalue; //Set DutyCylcle in timer-register
 }
 
@@ -249,12 +208,16 @@ static uint32_t readTemp(void) {
 /**
  * Calculation weight
  */
-static calc_weight(uint16_t current, uint16_t temp) {
-	static const float a0 = 3;
-	static const float a1 = 0.259086;
-	static const float a2 = 0.00249554;
-	static const float a3 = -0.000001443;
-	weight = a0+(current*a1)+(current*current)*a2+(current*current*current)*a3;
+static void calc_weight(uint16_t current) {
+	//static const float a0 = 3;
+	//static const float a1 = 0.259086;
+	//static const float a2 = 0.00249554;
+	//static const float a3 = -0.000001443;
+	//weight = a0+(current*a1)+((uint32_t)current*current)*a2+((uint32_t)current*current*current)*a3;
+	static const float a1 = 0.328283;
+	static const float a2 = 0.00115748;
+	static const float a3 = -0.00000018519;
+	weight = +(current*a1)+((uint32_t)current*current)*a2+((uint32_t)current*current*current)*a3;
 }
 
 static uint32_t current_average(uint32_t current){
@@ -263,7 +226,7 @@ static uint32_t current_average(uint32_t current){
 	static uint32_t sample_current[3] = {0,0,0};
 	uint32_t avg_current = 0;
 	sample_current[n] = current;
-	if(++n == 3){
+	if(++n == num_sample){
 		n = 0;
 	}
 	for(int i = 0; i < num_sample; i++){

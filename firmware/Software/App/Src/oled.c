@@ -64,13 +64,13 @@ int oled_print_weight(SSD1306_COLOR color,const char *fmt, ...) {
 		va_end(ap);
 		if (xSemaphoreTake(I2CSemaphore,DELAY_MAX_I2C_SEMAPHORE) == pdTRUE) {
 			//Legend of the buttons
-			ssd1306_SetCursor(LEGEND_X_OFFSET, LEGEND_Y_TOP_LINE);
+			ssd1306_SetCursor(LEGEND_X_OFFSET, LEGEND_Y_BOTTOM_LINE);
 			ssd1306_WriteString("Tara",  Font_6x8, color);
 			ssd1306_SetCursor(LEGEND_X_OFFSET, LEGEND_Y_TOP_LINE);
 			ssd1306_WriteString("g/oz",  Font_6x8, color);
 
 			//Print out weight
-			ssd1306_SetCursor(OLED_BORDER_OFFSET+10, OLED_LINE_HEIGHT+OLED_BORDER_OFFSET);
+			ssd1306_SetCursor(OLED_BORDER_OFFSET, OLED_WEIGHT_LINE_POSITION);
 			ssd1306_WriteString(s,  Font_16x26, color);
 
 			//Update screen with the new values

@@ -7,10 +7,11 @@
 #define ADC_MAX_VALUE 4096
 
 #define KP 8.5
-#define KI 4//2.2 //1.2 //15
-#define LOW 1820
-#define HIGH 2600
+#define KI 4
+#define LOW -1000
+#define HIGH 1000
 #define TS 0.005
+#define IDLE_VALUE 6970
 
 #define CONVERSION_GR_OZ  0.035274f
 
@@ -35,6 +36,8 @@
 #define PWM_SCALER 1200
 #define PWM_START_VALUE (PWM_MAX_VAL/5)
 #define DISTANCE_SCALER 3
+
+#define MAX_TEMP_VALUE 1400
 
 
 void app_main(void);

@@ -242,11 +242,11 @@ char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color) {
         b = Font.data[(ch - 32) * Font.FontHeight + i];
         for(j = 0; j < Font.FontWidth; j++) {
             if((b << j) & 0x8000)  {
-            	//ssd1306_DrawPixel((SSD1306_HEIGHT-SSD1306.CurrentY) + i, ((SSD1306_WIDTH-SSD1306.CurrentX) + (Font.FontWidth-j)), (SSD1306_COLOR) color); //Final
-                ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR) color);
+            	ssd1306_DrawPixel((SSD1306_HEIGHT-SSD1306.CurrentY) + i, ((SSD1306_WIDTH-SSD1306.CurrentX) + (Font.FontWidth-j)), (SSD1306_COLOR) color);
+                //ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR) color);
             } else {
-            	//ssd1306_DrawPixel((SSD1306_HEIGHT-SSD1306.CurrentY) + i, ((SSD1306_WIDTH-SSD1306.CurrentX) + (Font.FontWidth-j)), (SSD1306_COLOR)!color); //Final
-                ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR)!color);
+            	ssd1306_DrawPixel((SSD1306_HEIGHT-SSD1306.CurrentY) + i, ((SSD1306_WIDTH-SSD1306.CurrentX) + (Font.FontWidth-j)), (SSD1306_COLOR)!color);
+                //ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR)!color);
             }
         }
     }

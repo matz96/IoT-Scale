@@ -12,6 +12,9 @@
 static float integrate(S_piregler *me);
 static float limit(float val, float highlim, float lowlim);
 
+/*
+ * Initialisation of the controller
+ */
 void piregler_init(S_piregler *me, float idlevalue, float val, float kp,
 		float mem, float ki, float low, float high, float ts) {
 	me->idlevalue = idlevalue;
@@ -30,7 +33,7 @@ void piregler_init(S_piregler *me, float idlevalue, float val, float kp,
 static float integrate(S_piregler *me) {
 	static float integral = 0;
 	integral  += me->ki*(((me->mem + me->error)/2)*me->ts);
-	integral = limit(integral,1000,-1000);
+	integral = limit(integral,me->high,me->low);
 	me->mem = me->error;
 	return integral;
 
@@ -47,6 +50,9 @@ static float limit(float val, float highlim, float lowlim) {
 	return (val);
 }
 
+/*
+ * calc regler
+ */
 float ctl_pi(S_piregler *me) {
 	me->error = me->idlevalue - me->val;
 	return (me->error*me->kp+integrate(me));

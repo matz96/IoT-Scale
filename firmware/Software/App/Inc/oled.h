@@ -16,11 +16,11 @@
 #include "semphr.h"
 #include "../ssd1306/ssd1306.h"
 
-#define OLED_BORDER_OFFSET 5 //15
-#define OLED_LINE_HEIGHT 10
-//#define OLED_LINE_HEIGHT 30 //Final
+#define OLED_BORDER_OFFSET 15
+#define OLED_LINE_HEIGHT 30
+#define OLED_WEIGHT_LINE_POSITION 40
 #define LEGEND_X_OFFSET 104
-#define LEGEND_Y_TOP_LINE 60
+#define LEGEND_Y_BOTTOM_LINE 60
 #define LEGEND_Y_TOP_LINE 10
 #define DELAY_MAX_I2C_SEMAPHORE 1000
 #define OLED_ON 1
