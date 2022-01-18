@@ -21,15 +21,26 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/style.css">
   <meta name="theme-color" content="#fafafa">
+  <script type="text/javascript">
+    window.onload = startInterval;
+    function startInterval() {
+      setInterval("startTime();", 1000);
+    }
+
+    function startTime() {
+      document.getElementById('time');
+    }
+  </script>
 </head>
 
 <body>
 
   <!-- Add your site or application content here -->
- 
+
   <script src="js/vendor/modernizr-3.11.2.min.js"></script>
   <script src="js/plugins.js"></script>
   <script src="js/main.js"></script>
+
   <div class="grid-container">
     <div class="logo">
       <div id="head"></div>
@@ -51,81 +62,91 @@
         </ul>
         <div id="kontakt">
           <a>
-            <p>Kontaktangaben</p>
-            <p>jkaslkfjakkjfaf</p>
+            <p>Projekt 3 Team 2</p>
+            <li><a
+                href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Cdaniel%2Emoser2%40students%2Efhnw%2Ech">Daniel
+                Moser</a></li>
+            <li><a
+                href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Cmatthias%2Ebhend%40students%2Efhnw%2Ech">Matthias
+                Bhend</a></li>
+            <li><a
+                href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Ctimeo%2Ejauslin%40students%2Efhnw%2Ech">Timeo
+                Jauslin</a></li>
+            <p>Powered by Apache 2</p>
           </a>
 
         </div>
       </div>
     </div>
+    <div id='time'>
+      <div class="main">
+        <div class="body_grid">
+          <div class="description">
+            <p>Proportionalitäts Faktor</p>
+          </div>
+          <div class="txt_out">
+            <p>
 
-    <div class="main">
-      <div class="body_grid">
-        <div class="description">
-          <p>Proportionalitäts Faktor</p>
+              <embed src="KP.txt">
+            </p>
+          </div>
+          <div class="dropdown">
+          </div>
         </div>
-        <div class="txt_out">
-          <p>
-            
-            <embed src ="weight.txt">
-          </p>
-       </div>
-       <div class="dropdown">
-       </div>
-      </div>
-      <div class="body_grid">
-        <div class="description">
-          <p>Integrator Faktor</p>
+        <div class="body_grid">
+          <div class="description">
+            <p>Integrator Faktor</p>
+          </div>
+          <div class="txt_out">
+            <p>
+
+              <embed src="KI.txt">
+            </p>
+          </div>
         </div>
-        <div class="txt_out">
-          <p>
-            
-            <embed src ="weight.txt">
-          </p>
-       </div>
-      </div>
-      <div class="body_grid">
-        <div class="description">
-          <p>Lower limit anti windup</p>
+        <div class="body_grid">
+          <div class="description">
+            <p>Lower limit anti windup</p>
+          </div>
+          <div class="txt_out">
+            <p>
+
+              <embed src="LOW.txt">
+            </p>
+          </div>
         </div>
-        <div class="txt_out">
-          <p>
-            
-            <embed src ="weight.txt">
-          </p>
-       </div>
-      </div>
-      <div class="body_grid">
-        <div class="description">
-          <p>Higher limit anti windup</p>
+        <div class="body_grid">
+          <div class="description">
+            <p>Higher limit anti windup</p>
+          </div>
+          <div class="txt_out">
+            <p>
+              
+              <embed src="HIGH.txt">
+            </p>
+          </div>
         </div>
-        <div class="txt_out">
-          <p>
-            
-            <embed src ="weight.txt">
-          </p>
-       </div>
-      </div>
-      <div class="body_grid">
-        <div class="description">
-          <p>Sampling Zeit</p>
+        <div class="body_grid">
+          <div class="description">
+            <p>Sampling Zeit</p>
+          </div>
+          <div class="txt_out">
+            <p>
+
+              <embed src="TS.txt">
+            </p>
+          </div>
         </div>
-        <div class="txt_out">
-          <p>
-            
-            <embed src ="weight.txt">
-          </p>
-       </div>
-      </div>
-      <div class="body_grid">
-        <div class="description">
-          <p>Soll Wert</p>
+        <div class="body_grid">
+          <div class="description">
+            <p>Soll Wert</p>
+          </div>
+          <div class="txt_out">
+            <p>
+              <embed src="IdleValue.txt">
+            </p>
+          </div>
         </div>
-        <div class="txt_out">
-          <p>
-            <embed src ="weight.txt">
-          </p>
-       </div>
       </div>
     </div>
 </body>

@@ -2,7 +2,7 @@
 
 $(document).ready(function(){
   $("button").click(function(){
-    $("#div1").load("demo_test.txt");
+	$("#div1").load("demo_test.txt");
   });
 });
 
@@ -12,26 +12,27 @@ $(document).ready(function(){
    if(err) throw err;
    log.console(data.toString());
  })
-*/
-document.querySelector("#weight").addEventListener(onload, async function() {
+
+document.querySelector("#weight").addEventListener(onload, async function () {
 	try {
 		let text_data = await downloadFile();
 		document.querySelector("#weight").textContent = text_data;
 	}
-	catch(e) {
+	catch (e) {
 		alert(e.message);
 	}
 });
 
 async function downloadFile() {
 	let response = await fetch("/weight.txt");
-		
-	if(response.status != 200) {
+
+	if (response.status != 200) {
 		throw new Error("Server Error");
 	}
-		
+
 	// read response stream as text
 	let text_data = await response.text();
 
 	return text_data;
 }
+*/

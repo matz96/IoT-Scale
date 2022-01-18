@@ -24,6 +24,16 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/style.css">
   <meta name="theme-color" content="#fafafa">
+  <script type="text/javascript">
+    window.onload = startInterval;
+    function startInterval() {
+      setInterval("startTime();", 1000);
+    }
+
+    function startTime() {
+      document.getElementById('time');
+    }
+  </script>
 </head>
 
 <body>
@@ -57,7 +67,11 @@
         </ul>
         <div id="kontakt">
           <a>
-            <p>Kontaktangaben</p>
+            
+            <p>Projekt 3 Team 2</p>
+            <li><a href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Cdaniel%2Emoser2%40students%2Efhnw%2Ech">Daniel Moser</a></li>
+            <li><a href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Cmatthias%2Ebhend%40students%2Efhnw%2Ech">Matthias Bhend</a></li>
+            <li><a href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Ctimeo%2Ejauslin%40students%2Efhnw%2Ech">Timeo Jauslin</a></li>   
             <p>Powered by Apache 2</p>
           </a>
 
@@ -69,6 +83,7 @@
 
 
       <div class="body_grid">
+        <div id='time'>
         <div class="description">
           <p>Gewicht</p>
         </div>
@@ -87,6 +102,7 @@
           
 
         </div>
+      </div>
         <div class="dropdown">
           <select id="dropdown"
             onchange="document.getElementById('displayValue').value=this.options[this.selectedIndex].text; document.getElementById('idValue').value=this.options[this.selectedIndex].value;">
