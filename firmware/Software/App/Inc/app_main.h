@@ -42,8 +42,6 @@
 
 #define MAX_TEMP_VALUE 1400
 
-
-
 void app_main(void);
 
 

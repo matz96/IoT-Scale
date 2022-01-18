@@ -17,7 +17,6 @@
 #include "piregler.h"
 #include "vcnl4040.h"
 
-static void I2C2Task(void *pvParameters);
 static void MainTask(void *pvParameters);
 static void ReglerISTTask(void *pvParameters);
 
@@ -33,7 +32,6 @@ S_piregler piregler;
 SemaphoreHandle_t ReglerSemaphore;
 SemaphoreHandle_t DisplaySemaphore;
 SemaphoreHandle_t I2CSemaphore;
-SemaphoreHandle_t RPSemaphore;
 
 bool unit_oz = false;
 uint32_t tara = 0;
@@ -45,11 +43,8 @@ void app_main(void) {	I2CSemaphore = xSemaphoreCreateMutex();
 	RPSemaphore = xSemaphoreCreateBinary();
 	xSemaphoreGive(ReglerSemaphore);
 	xSemaphoreGive(I2CSemaphore);
-	xSemaphoreGive(RPSemaphore);
-	//xTaskCreate(I2C2Task, "I2C2-Task", (configMINIMAL_STACK_SIZE + 80), NULL, (tskIDLE_PRIORITY + 1), NULL);
-	xTaskCreate(MainTask, "Main-Task", (configMINIMAL_STACK_SIZE + 80), NULL,(tskIDLE_PRIORITY + 1), NULL);
-	xTaskCreate(ReglerISTTask, "Regler-Task", (configMINIMAL_STACK_SIZE + 80),
-	NULL, (tskIDLE_PRIORITY + 2), NULL);
+	xTaskCreate(MainTask, "Main-Task", (configMINIMAL_STACK_SIZE+20), NULL,(tskIDLE_PRIORITY + 2), NULL);
+	xTaskCreate(ReglerISTTask, "Regler-Task", (configMINIMAL_STACK_SIZE), NULL, (tskIDLE_PRIORITY + 3), NULL);
 	vTaskStartScheduler();
 	/* The FreeRTOS scheduler should never return to here, except on out of memory at creating the idle task! */
 	for (;;)
@@ -85,6 +80,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 /*
  * MainTask for Display weight and read out current and temperature
+ * and write data to raspberry pi
  */
 static void MainTask(__attribute__ ((unused)) void *pvParameters) {
 	HAL_Delay(DISPLAY_START_DELAY);
@@ -92,65 +88,44 @@ static void MainTask(__attribute__ ((unused)) void *pvParameters) {
 	char text[DISPLAY_TEXT_LENGTH];
 	uint32_t current = 0;
 	uint32_t temp = 0;
+	extern I2C_HandleTypeDef hi2c2;
+	int32_t buf[RP_BUF_SIZE];
 	while (1) {
 		if (xSemaphoreTake(DisplaySemaphore,
 				MAX_DELAY_DISPLAY_SEMAPHORE) == pdTRUE) {
-
 			//Read values and calculate weight
 			current = readCurrent();
 			temp = readTemp();
 			calc_weight(current_average(current));
 
-			//Warn user by overheat
+			//warn user by overheat
 			if(temp > MAX_TEMP_VALUE){
-				oled_printf(3, Black, "Remove weight");
-				oled_printf(4, Black, "Overheat!");
+				snprintf(text, sizeof(text), "Overheat");
+			}else{
+				//Print weight in the selected unit
+				if (unit_oz) {
+					static float ounce = 0;
+					ounce = ((float)weight - (float)tara) * CONVERSION_GR_OZ;
+					snprintf(text, sizeof(text), "%.3doz ", (int)ounce);
+				} else {
+					snprintf(text, sizeof(text), "%.4dg ", (int)(weight - tara));
+				}
+				oled_print_weight(Black, text);
 			}
-
-			//Print weight in the selected unit
-			if (unit_oz) {
-				static float ounce = 0;
-				ounce = ((float)weight - (float)tara) * CONVERSION_GR_OZ;
-				snprintf(text, sizeof(text), "%0.3doz ", (int)ounce);
-			} else {
-				snprintf(text, sizeof(text), "%0.4dg ", (int)(weight - tara));
-			}
-			oled_print_weight(Black, text);
-
-			xSemaphoreGive(RPSemaphore);
-			HAL_Delay(DISPLAY_REFRESH_TIMEOUT);
 		}
-	}
-}
 
-/**
- * Task for communication over I2C with Raspberry Pi Zero W (over second i2c interface)
- */
-static void I2C2Task(__attribute__ ((unused)) void *pvParameters) {
-	//Write to RP over I2C2
-	extern I2C_HandleTypeDef hi2c2;
-	char s[200];
-	uint32_t buf[RP_BUF_SIZE] = {0, 0, 0, 0, 0, 0, 0};
-	while (1) {
-		if (xSemaphoreTake(RPSemaphore,
-			MAX_DELAY_RP_SEMAPHORE) == pdTRUE) {
-			// Generate data buffer
-			 buf[0] = weight-tara;
-			 buf[1] = (uint32_t)piregler.kp;
-			 buf[2] = (uint32_t)piregler.ki;
-			 buf[3] = (uint32_t)piregler.low;
-			 buf[4] = (uint32_t)piregler.high;
-			 buf[5] = (uint32_t)piregler.ts;
-			 buf[6] = (uint32_t)piregler.idlevalue;
+		// Generate data buffer for raspberry
+		buf[0] = weight-tara;
+		buf[1] = (int32_t)piregler.kp;
+		buf[2] = (int32_t)piregler.ki;
+		buf[3] = (int32_t)piregler.low;
+		buf[4] = (int32_t)piregler.high;
+		buf[5] = (int32_t)piregler.ts;
+		buf[6] = (int32_t)piregler.idlevalue;
 
-			 // Write data buffer
-			 HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, buf, sizeof(buf), HAL_MAX_DELAY);
-
-			//data send in the follow order; weight,KP,KI ,LOW ,HIGH, TS, IdleValue
-			//snprintf(s, sizeof(s),"%d,%d,%d,%d,%d,%d,%d",(int)weight,(int)piregler.kp,(int)piregler.ki,(int)piregler.low,(int)piregler.high,(int)piregler.ts, (int)piregler.idlevalue);
-			//HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &s, sizeof(s),
-			//	HAL_MAX_DELAY);
-		}
+		// Write data buffer
+		HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, buf, sizeof(buf), HAL_MAX_DELAY);
+		HAL_Delay(DISPLAY_REFRESH_TIMEOUT);
 	}
 }
 
@@ -159,10 +134,8 @@ static void I2C2Task(__attribute__ ((unused)) void *pvParameters) {
  */
 static void ReglerISTTask(__attribute__ ((unused)) void *pvParameters) {
 	int32_t dist = 0;
-	initVCNL4040(VCNL4040_ADDR); //Wegmesssensor initialisieren
-	//int32_t idle_value = (DISTANCE_SCALER*readVCNL4040(VCNL4040_ADDR, (VCNL4040_PS_DATA)))
-		//	- START_DIST_OFFSET; //Read start distance
-	piregler_init(&piregler, IDLE_VALUE, 0, KP, 0, KI, LOW, HIGH, TS); //PIRegler initialisieren
+	initVCNL4040(VCNL4040_ADDR); //VCNL4040 initalise
+	piregler_init(&piregler, IDLE_VALUE, 0, KP, 0, KI, LOW, HIGH, TS); //PIRegler initalise
 	while (1) {
 		if (xSemaphoreTake(ReglerSemaphore,MAX_DELAY_REGLER_SEMAPHORE) == pdTRUE) {
 			dist = readVCNL4040(VCNL4040_ADDR, (VCNL4040_PS_DATA)); //Read distance of sensor
@@ -180,6 +153,7 @@ static void ReglerISTTask(__attribute__ ((unused)) void *pvParameters) {
 static void user_pwm_setvalue(float value) {
 	static int32_t pwmvalue = PWM_START_VALUE;
 	pwmvalue = pwmvalue - (value / PWM_SCALER);
+
 	//Limit output of PWM
 	if (pwmvalue > PWM_MAX_VAL) {
 		pwmvalue = PWM_MAX_VAL;
@@ -239,6 +213,11 @@ static void calc_weight(uint16_t current) {
 	static const float m = 1.05524;
 	static const float b = -21.7452;
 	weight = m*((float)(weight))+b;
+
+	// Weight not allowed under zero
+	if(weight < 0){
+		weight = 0;
+	}
 }
 
 /*
