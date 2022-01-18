@@ -67,8 +67,8 @@ all: main-build
 main-build: Pro3E_RT_Mikrocontroller.elf secondary-outputs
 
 # Tool invocations
-Pro3E_RT_Mikrocontroller.elf: $(OBJS) $(USER_OBJS) C:\Users\engel\OneDrive\ -\ FHNW\pro3E\Software\pro3e\firmware\Software\STM32F070RBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Pro3E_RT_Mikrocontroller.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"C:\Users\engel\OneDrive - FHNW\pro3E\Software\pro3e\firmware\Software\STM32F070RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Pro3E_RT_Mikrocontroller.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Pro3E_RT_Mikrocontroller.elf: $(OBJS) $(USER_OBJS) C:\Users\timeo\pro3e\firmware\Software\STM32F070RBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Pro3E_RT_Mikrocontroller.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"C:\Users\timeo\pro3e\firmware\Software\STM32F070RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Pro3E_RT_Mikrocontroller.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
