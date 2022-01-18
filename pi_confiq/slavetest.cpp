@@ -5,7 +5,7 @@
 #include <time.h>
 
 using namespace std;
-const char *path = "/var/www/html/pro3e/webinterface/weight.txt";
+char *path = "/var/www/html/pro3e/webinterface/files/weight.txt";
 void runSlave();
 //void closeSlave();
 int getControlBits(int, bool);
@@ -22,31 +22,8 @@ int main()
     return 0;
 }
 
-void runSlave()
-{
-    gpioInitialise();
-    cout << "Initialized GPIOs\n";
-    // Close old device (if any)
-    xfer.control = getControlBits(slaveAddress, false); // To avoid conflicts when restarting
-    bscXfer(&xfer);
-    // Set I2C slave Address to 0x0A
-    xfer.control = getControlBits(slaveAddress, true);
-    int status = bscXfer(&xfer); // Should now be visible in I2C-Scanners
-
-    if (status >= 0)
-    {
-        cout << "Opened slave\n";
-        xfer.rxCnt = 0;
-        while (1)
-        {
-            bscXfer(&xfer);
-            if (xfer.rxCnt > 0)
-            {
-                cout << "Received " << xfer.rxCnt << " bytes: ";
-                ofstream MyFile;
-                MyFile.open(path, ios::out | ios::trunc);
-                for (int i = 0; i < (xfer.rxCnt-1)  ; i++)
-                { int32_t k,j;
+int32_t addup (int i){
+    int32_t k,j;
                     switch (i%4)
                     {
                     case 0:
@@ -70,9 +47,81 @@ void runSlave()
                     default:
                         break;
                     }
-                    MyFile << k; 
-                    MyFile << "\n";
-                
+}
+void path(int cnt){
+switch (cnt)
+{
+case 0:
+   char *path = "/var/www/html/pro3e/webinterface/files/weight.txt";
+    break;
+case 1:
+   char *path = "/var/www/html/pro3e/webinterface/files/KP.txt";
+    break;
+case 2:
+   char *path = "/var/www/html/pro3e/webinterface/files/KI.txt";
+    break;
+case 3:
+   char *path = "/var/www/html/pro3e/webinterface/files/LOW.txt";
+    break;
+case 4:
+   char *path = "/var/www/html/pro3e/webinterface/files/HIGH.txt";
+    break;
+case 5:
+   char *path = "/var/www/html/pro3e/webinterface/files/TS.txt";
+    break;
+case 6:
+   char *path = "/var/www/html/pro3e/webinterface/files/IdleValue.txt";
+    break;
+
+default:
+    break;
+}
+
+}
+void output(int32_t k){
+ ofstream MyFile;
+ MyFile.open(path, ios::out | ios::trunc);
+ MyFile << k; 
+ MyFile.close();
+}
+
+void runSlave()
+{
+    gpioInitialise();
+    cout << "Initialized GPIOs\n";
+    // Close old device (if any)
+    xfer.control = getControlBits(slaveAddress, false); // To avoid conflicts when restarting
+    bscXfer(&xfer);
+    // Set I2C slave Address to 0x0A
+    xfer.control = getControlBits(slaveAddress, true);
+    int status = bscXfer(&xfer); // Should now be visible in I2C-Scanners
+
+    if (status >= 0)
+    {
+        cout << "Opened slave\n";
+        xfer.rxCnt = 0;
+        while (1)
+        {
+            bscXfer(&xfer);
+            if (xfer.rxCnt > 0)
+            {
+                cout << "Received " << xfer.rxCnt << " bytes: ";
+               
+                int cnt= 0;
+                for (int i = 0; i < (xfer.rxCnt-1); )
+                { int32_t k=0; 
+                    
+                    k+=addup(i);
+                    i++;
+                    if(i%4=0){
+                       int32_t k=0;
+                       path(cnt);
+                       output(k);
+                        cnt++;
+                   }
+
+                   
+                  
 
 
                    // MyFile << (int) xfer.rxBuf[i];
@@ -80,7 +129,7 @@ void runSlave()
                     
                 }
 
-                MyFile.close();
+                
                 cout << "\n";
             }
             // sleep(2000);
