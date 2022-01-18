@@ -1,8 +1,50 @@
 #ifndef APP_MAIN
 #define APP_MAIN
 
-#define WITH_TOUCH_TASK             0
+#define PWM_MAX_VAL 1800
+#define PWM_MIN_VAL 0
+
+#define ADC_MAX_VALUE 4096
+
+#define KP 8.5
+#define KI 4
+#define LOW -1000
+#define HIGH 1000
+#define TS 0.005
+#define IDLE_VALUE 6970
+
+#define CONVERSION_GR_OZ  0.035274f
+
+#define BTN_TARA 8
+#define BTN_UINT 4
+
+#define START_DIST_OFFSET 10
+
+#define RPZERO_ADDR  (0x03<<1)
+#define RP_BUF_SIZE 7
+
+#define MAX_ADC_TIMEOUT 1000
+#define MAX_DELAY_REGLER_SEMAPHORE 100
+#define MAX_DELAY_DISPLAY_SEMAPHORE 200
+
+#define DISPLAY_REFRESH_TIMEOUT 200
+#define DISPLAY_START_DELAY 200
+#define DISPLAY_TEXT_LENGTH 20
+
+#define COVERTION_A_TO_MA 1000
+#define NUM_AVERAGE_SAMPLES 3
+
+#define MAX_DELAY_RP_SEMAPHORE 100
+
+#define PWM_SCALER 1200
+#define PWM_START_VALUE (PWM_MAX_VAL/5)
+#define DISTANCE_SCALER 3
+
+#define MAX_TEMP_VALUE 1400
+
+
 
 void app_main(void);
+
 
 #endif

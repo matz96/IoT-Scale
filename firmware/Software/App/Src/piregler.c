@@ -12,35 +12,49 @@
 static float integrate(S_piregler *me);
 static float limit(float val, float highlim, float lowlim);
 
-void piregler_init(S_piregler *me, float val, float kp, float mem, float tn, float low, float high, float bias, float ts){
-	me->val =  val;
-	me->kp =  kp;
-	me->mem =  mem;
-	me->tn =  tn;
-	me->low =  low;
-	me->high =  high;
-	me->bias =  bias;
-	me->ts =  ts;
+/*
+ * Initialisation of the controller
+ */
+void piregler_init(S_piregler *me, float idlevalue, float val, float kp,
+		float mem, float ki, float low, float high, float ts) {
+	me->idlevalue = idlevalue;
+	me->val = val;
+	me->kp = kp;
+	me->mem = mem;
+	me->ki = ki;
+	me->low = low;
+	me->high = high;
+	me->ts = ts;
 }
 
 /*
  * Integration
  */
-static float integrate(S_piregler *me){
-	me->mem = me->mem + me->ts*me->val;
-	return me->mem;
+static float integrate(S_piregler *me) {
+	static float integral = 0;
+	integral  += me->ki*(((me->mem + me->error)/2)*me->ts);
+	integral = limit(integral,me->high,me->low);
+	me->mem = me->error;
+	return integral;
+
 }
 
 /*
- * Anti-Windup for integrator
+ * Limit for Regler
  */
-static float limit(float val, float highlim, float lowlim){
-	if(val < lowlim) return lowlim;
-	if(val > highlim)return highlim;
-	return(val);
+static float limit(float val, float highlim, float lowlim) {
+	if (val < lowlim)
+		return lowlim;
+	if (val > highlim)
+		return highlim;
+	return (val);
 }
 
-float ctl_pi(S_piregler *me){
-	me->val = me->val* me->kp;
-	return(limit(integrate(me)+me->bias+me->val,me->high,me->low));
+/*
+ * calc regler
+ */
+float ctl_pi(S_piregler *me) {
+	me->error = me->idlevalue - me->val;
+	return (me->error*me->kp+integrate(me));
 }
+

@@ -11,12 +11,12 @@ void ssd1306_Reset(void) {
 
 // Send a byte to the command register
 void ssd1306_WriteCommand(uint8_t byte) {
-    //HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x00, 1, &byte, 1, HAL_MAX_DELAY);
+    HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x00, 1, &byte, 1, HAL_MAX_DELAY);
 }
 
 // Send data
 void ssd1306_WriteData(uint8_t* buffer, size_t buff_size) {
-    //HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x40, 1, buffer, buff_size, HAL_MAX_DELAY);
+    HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x40, 1, buffer, buff_size, HAL_MAX_DELAY);
 }
 
 #elif defined(SSD1306_USE_SPI)
@@ -75,7 +75,7 @@ void ssd1306_Init(void) {
     ssd1306_Reset();
 
     // Wait for the screen to boot
-    HAL_Delay(100);
+    //HAL_Delay(100);
 
     // Init OLED
     ssd1306_SetDisplayOn(0); //display off
@@ -242,9 +242,11 @@ char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color) {
         b = Font.data[(ch - 32) * Font.FontHeight + i];
         for(j = 0; j < Font.FontWidth; j++) {
             if((b << j) & 0x8000)  {
-                ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR) color);
+            	ssd1306_DrawPixel((SSD1306_HEIGHT-SSD1306.CurrentY) + i, ((SSD1306_WIDTH-SSD1306.CurrentX) + (Font.FontWidth-j)), (SSD1306_COLOR) color);
+                //ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR) color);
             } else {
-                ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR)!color);
+            	ssd1306_DrawPixel((SSD1306_HEIGHT-SSD1306.CurrentY) + i, ((SSD1306_WIDTH-SSD1306.CurrentX) + (Font.FontWidth-j)), (SSD1306_COLOR)!color);
+                //ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR)!color);
             }
         }
     }
@@ -276,7 +278,9 @@ char ssd1306_WriteString(char* str, FontDef Font, SSD1306_COLOR color) {
 // Position the cursor
 void ssd1306_SetCursor(uint8_t x, uint8_t y) {
     SSD1306.CurrentX = x;
+    //SSD1306.CurrentX = SSD1306_WIDTH-x;
     SSD1306.CurrentY = y;
+    //SSD1306.CurrentY = SSD1306_HEIGHT-y;
 }
 
 // Draw line by Bresenhem's algorithm

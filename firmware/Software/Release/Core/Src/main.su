@@ -1,0 +1,4 @@
+main.c:570:6:StartDefaultTask	8	static
+main.c:187:6:SystemClock_Config	104	static,ignoring_inline_asm
+main.c:95:5:main	120	static,ignoring_inline_asm
+main.c:585:6:Error_Handler	0	static,ignoring_inline_asm

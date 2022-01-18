@@ -36,11 +36,12 @@
 //#define SSD1306_Reset_Pin       OLED_Res_Pin
 
 // Mirror the screen if needed
- //#define SSD1306_MIRROR_VERT
-// #define SSD1306_MIRROR_HORIZ
+
+#define SSD1306_MIRROR_VERT
+#define SSD1306_MIRROR_HORIZ
 
 // Set inverse color if needed
-//# define SSD1306_INVERSE_COLOR
+# define SSD1306_INVERSE_COLOR
 
 // Include only needed fonts
 #define SSD1306_INCLUDE_FONT_6x8
@@ -55,6 +56,6 @@
 
 // The height can be changed as well if necessary.
 // It can be 32, 64 or 128. The default value is 64.
- #define SSD1306_HEIGHT          130
+ #define SSD1306_HEIGHT          128
 
 #endif /* __SSD1306_CONF_H__ */
