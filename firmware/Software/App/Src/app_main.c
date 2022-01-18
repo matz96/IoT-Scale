@@ -39,7 +39,8 @@ bool unit_oz = false;
 uint32_t tara = 0;
 uint32_t weight = 0;
 
-void app_main(void) {	I2CSemaphore = xSemaphoreCreateMutex();
+void app_main(void) {
+	I2CSemaphore = xSemaphoreCreateMutex();
 	ReglerSemaphore = xSemaphoreCreateBinary();
 	DisplaySemaphore = xSemaphoreCreateBinary();
 	RPSemaphore = xSemaphoreCreateBinary();
@@ -47,7 +48,8 @@ void app_main(void) {	I2CSemaphore = xSemaphoreCreateMutex();
 	xSemaphoreGive(I2CSemaphore);
 	xSemaphoreGive(RPSemaphore);
 	//xTaskCreate(I2C2Task, "I2C2-Task", (configMINIMAL_STACK_SIZE + 80), NULL, (tskIDLE_PRIORITY + 1), NULL);
-	xTaskCreate(MainTask, "Main-Task", (configMINIMAL_STACK_SIZE + 80), NULL,(tskIDLE_PRIORITY + 1), NULL);
+	xTaskCreate(MainTask, "Main-Task", (configMINIMAL_STACK_SIZE + 80), NULL,
+			(tskIDLE_PRIORITY + 1), NULL);
 	xTaskCreate(ReglerISTTask, "Regler-Task", (configMINIMAL_STACK_SIZE + 80),
 	NULL, (tskIDLE_PRIORITY + 2), NULL);
 	vTaskStartScheduler();
@@ -100,7 +102,7 @@ static void MainTask(__attribute__ ((unused)) void *pvParameters) {
 			temp = readTemp();
 			calc_weight(current_average(current));
 
-			if(temp > MAX_TEMP_VALUE){
+			if (temp > MAX_TEMP_VALUE) {
 				oled_printf(3, Black, "Remove weight");
 				oled_printf(4, Black, "Overheat!");
 			}
@@ -132,9 +134,11 @@ static void I2C2Task(__attribute__ ((unused)) void *pvParameters) {
 		if (xSemaphoreTake(RPSemaphore,
 				MAX_DELAY_RP_SEMAPHORE) == pdTRUE) {
 			//data send in the follow order; weight,KP,KI ,LOW ,HIGH, TS, IdleValue
-			snprintf(s, sizeof(s),"%d,%d,%d,%d,%d,%d,%d",weight,piregler.kp,piregler.ki,piregler.low,piregler.high,piregler.ts, piregler.idlevalue);
+			snprintf(s, sizeof(s), "%d,%d,%d,%d,%d,%d,%d", weight, piregler.kp,
+					piregler.ki, piregler.low, piregler.high, piregler.ts,
+					piregler.idlevalue);
 			HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &s, sizeof(s),
-					HAL_MAX_DELAY);
+			HAL_MAX_DELAY);
 		}
 	}
 }
@@ -146,12 +150,12 @@ static void ReglerISTTask(__attribute__ ((unused)) void *pvParameters) {
 	int32_t dist = 0;
 	initVCNL4040(VCNL4040_ADDR); //Wegmesssensor initialisieren
 	//int32_t idle_value = (DISTANCE_SCALER*readVCNL4040(VCNL4040_ADDR, (VCNL4040_PS_DATA)))
-		//	- START_DIST_OFFSET; //Read start distance
+	//	- START_DIST_OFFSET; //Read start distance
 	piregler_init(&piregler, IDLE_VALUE, 0, KP, 0, KI, LOW, HIGH, TS); //PIRegler initialisieren
 	while (1) {
 		if (xSemaphoreTake(ReglerSemaphore,MAX_DELAY_REGLER_SEMAPHORE) == pdTRUE) {
 			dist = readVCNL4040(VCNL4040_ADDR, (VCNL4040_PS_DATA)); //Read distance of sensor
-			piregler.val = (float) dist*DISTANCE_SCALER; //Set value to the piregler
+			piregler.val = (float) dist * DISTANCE_SCALER; //Set value to the piregler
 			user_pwm_setvalue(ctl_pi(&piregler)); //Run piregler and set the new pwm duty-cycle
 			xSemaphoreGive(DisplaySemaphore);
 		}
@@ -217,20 +221,24 @@ static void calc_weight(uint16_t current) {
 	static const float a1 = 0.328283;
 	static const float a2 = 0.00115748;
 	static const float a3 = -0.00000018519;
-	weight = +(current*a1)+((uint32_t)current*current)*a2+((uint32_t)current*current*current)*a3;
+	static const float cor1 = 1.05524;
+	static const float cor2 = -21.7452;
+	weight = cor1
+			* ((current * a1) + ((uint32_t) current * current) * a2
+					+ ((uint32_t) current * current * current) * a3) + cor2;
 }
 
-static uint32_t current_average(uint32_t current){
+static uint32_t current_average(uint32_t current) {
 	static uint32_t n = 0;
 	static const uint16_t num_sample = 3;
-	static uint32_t sample_current[3] = {0,0,0};
+	static uint32_t sample_current[3] = { 0, 0, 0 };
 	uint32_t avg_current = 0;
 	sample_current[n] = current;
-	if(++n == num_sample){
+	if (++n == num_sample) {
 		n = 0;
 	}
-	for(int i = 0; i < num_sample; i++){
+	for (int i = 0; i < num_sample; i++) {
 		avg_current += sample_current[i];
 	}
-	return(avg_current/num_sample);
+	return (avg_current / num_sample);
 }
