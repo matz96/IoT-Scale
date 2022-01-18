@@ -88,13 +88,13 @@
 }
 
 #body{
-  margin: 50px;
+  margin: 75px;
   background-color: darkgrey;
 }
 
 .body_grid{
   display:grid;
-  grid-gap: 50px 1px;
+  grid-gap: 100px 1px;
   grid-template-columns: [first] 30% [second] 60% [third] 10%;
   
 }
@@ -102,14 +102,16 @@
 
 .txt_out{
   grid-column: 2/span 1;
-  font-family: Arial, Helvetica, sans-serif
+  font-family: Arial, Helvetica, sans-serif;
+  color: black;
+  font-size: 20px;
+  font-weight: 200;
   border: 2px solid darkgray;  
   background-color: rgb(236, 236, 236);
   text-align: right;
-
-
-
 }
+
+
 .description{
   grid-column: 1/span 1;
   color: black;
