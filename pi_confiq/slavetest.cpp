@@ -51,7 +51,7 @@ void runSlave()
                         MyFile << "\n";
                     }
 
-                    MyFile << xfer.rxBuf[i];
+                    MyFile << (int) xfer.rxBuf[i];
                     cout << xfer.rxBuf[i]; //used for testing
                     
                 }
