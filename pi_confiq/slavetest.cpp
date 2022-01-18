@@ -48,7 +48,7 @@ void runSlave()
                 for (int i = 0; i < (xfer.rxCnt-1)  ; i++)
                 {
                     if(i%4==0){
-                        MyFile << "\n"
+                        MyFile << "\n";
                     }
 
                     MyFile << xfer.rxBuf[i];
