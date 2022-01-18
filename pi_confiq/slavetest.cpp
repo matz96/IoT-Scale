@@ -46,12 +46,36 @@ void runSlave()
                 ofstream MyFile;
                 MyFile.open(path, ios::out | ios::trunc);
                 for (int i = 0; i < (xfer.rxCnt-1)  ; i++)
-                {
-                    if(i%4==0){
-                        MyFile << "\n";
+                { int32_t k,j;
+                    switch (i%4)
+                    {
+                    case 0:
+                        k = xfer.rxBuf[i];
+                        k << 24;
+                        break;
+                    case 1:
+                        j = xfer.rxBuf[i];
+                        j << 16;
+                        k+=j;
+                        break;
+                    case 2:
+                        j = xfer.rxBuf[i];
+                        j << 8;
+                        k+=j;
+                        break;
+                    case 3:
+                        j = xfer.rxBuf[i];
+                        k+=j;
+                        break;
+                    default:
+                        break;
                     }
+                    MyFile << k; 
+                    MyFile << "\n";
+                
 
-                    MyFile << (int) xfer.rxBuf[i];
+
+                   // MyFile << (int) xfer.rxBuf[i];
                     cout << xfer.rxBuf[i]; //used for testing
                     
                 }
