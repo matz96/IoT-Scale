@@ -1,5 +1,6 @@
 <!doctype html>
 <html class="no-js" lang="">
+
 <head>
   <meta charset="utf-8">
   <!--meta http-equiv="refresh" content="1"-->
@@ -17,7 +18,7 @@
   <link rel="apple-touch-icon" href="img/Logo_FHNW.svg.png">
   <link rel="icon" href="img/Logo_FHNW.svg.png">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script type ="module" src="js/main.js"></script>
+  <script type="module" src="js/main.js"></script>
   <!-- Place favicon.ico in the root directory -->
 
   <link rel="stylesheet" href="css/normalize.css">
@@ -42,10 +43,10 @@
 
   <script src="js/vendor/modernizr-3.11.2.min.js"></script>
   <script src="js/plugins.js"></script>
-  
-  
-  <script type = "application/json" src="js/weight.json"></script>
-  <script type = "txt/html" src="js/weight.txt"></script>
+
+
+  <script type="application/json" src="js/weight.json"></script>
+  <script type="txt/html" src="js/weight.txt"></script>
   <div class="grid-container">
     <div class="logo">
       <div id="head"></div>
@@ -67,11 +68,17 @@
         </ul>
         <div id="kontakt">
           <a>
-            
+
             <p>Projekt 3 Team 2</p>
-            <li><a href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Cdaniel%2Emoser2%40students%2Efhnw%2Ech">Daniel Moser</a></li>
-            <li><a href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Cmatthias%2Ebhend%40students%2Efhnw%2Ech">Matthias Bhend</a></li>
-            <li><a href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Ctimeo%2Ejauslin%40students%2Efhnw%2Ech">Timeo Jauslin</a></li>   
+            <li><a
+                href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Cdaniel%2Emoser2%40students%2Efhnw%2Ech">Daniel
+                Moser</a></li>
+            <li><a
+                href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Cmatthias%2Ebhend%40students%2Efhnw%2Ech">Matthias
+                Bhend</a></li>
+            <li><a
+                href="https://people.inside.fhnw.ch/Person.aspx?accountname=i%3A05%2Et%7Cadfs%7Ctimeo%2Ejauslin%40students%2Efhnw%2Ech">Timeo
+                Jauslin</a></li>
             <p>Powered by Apache 2</p>
           </a>
 
@@ -81,36 +88,36 @@
 
     <div class="main">
 
+      <div id='time'>
+        <div class="body_grid">
 
-      <div class="body_grid">
-        <div id='time'>
-        <div class="description">
-          <p>Gewicht</p>
+          <div class="description">
+            <p>Gewicht</p>
+          </div>
+          <div class="txt_out">
+            <p>
+
+              <embed src="weight.txt">
+            </p>
+
+
+
+
+
+
+
+
+
+          </div>
+
+          <div class="dropdown">
+            <select id="dropdown"
+              onchange="document.getElementById('displayValue').value=this.options[this.selectedIndex].text; document.getElementById('idValue').value=this.options[this.selectedIndex].value;">
+              <option value="gram">g</option>
+              <option value="pound">lb</option>
+            </select>
+          </div>
         </div>
-        <div class="txt_out">
-          <p>
-            
-            <embed src ="weight.txt">
-          </p>
-          
-          
-          
-          
-          
-          
-
-          
-
-        </div>
-      </div>
-        <div class="dropdown">
-          <select id="dropdown"
-            onchange="document.getElementById('displayValue').value=this.options[this.selectedIndex].text; document.getElementById('idValue').value=this.options[this.selectedIndex].value;">
-            <option value="gram">g</option>
-            <option value="pound">lb</option>
-          </select>
-        </div>
-
       </div>
 
 
