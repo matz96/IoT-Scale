@@ -19,7 +19,9 @@
 #define BTN_UINT 4
 
 #define START_DIST_OFFSET 10
+
 #define RPZERO_ADDR  (0x03<<1)
+#define RP_BUF_SIZE 7
 
 #define MAX_ADC_TIMEOUT 1000
 #define MAX_DELAY_REGLER_SEMAPHORE 100
@@ -30,6 +32,7 @@
 #define DISPLAY_TEXT_LENGTH 20
 
 #define COVERTION_A_TO_MA 1000
+#define NUM_AVERAGE_SAMPLES 3
 
 #define MAX_DELAY_RP_SEMAPHORE 100
 
@@ -38,6 +41,7 @@
 #define DISTANCE_SCALER 3
 
 #define MAX_TEMP_VALUE 1400
+
 
 
 void app_main(void);

@@ -23,12 +23,12 @@ void initVCNL4040(uint8_t addr){
 
 bool writeVCNL4040(uint8_t addr, uint8_t command, uint8_t lowbyte, uint8_t highbyte){
 	static HAL_StatusTypeDef ret;
-	static uint8_t data[3];
+	static uint8_t data[SEND_BUF_SIZE];
 	data[0] = command;
 	data[1] = lowbyte;
 	data[2] = highbyte;
 	if(xSemaphoreTake(I2CSemaphore,DELAY_MAX_I2C_VCNL4040) == pdTRUE){
-		ret = HAL_I2C_Master_Transmit(&hi2c1, addr, data, 3, HAL_MAX_DELAY);
+		ret = HAL_I2C_Master_Transmit(&hi2c1, addr, data, SEND_BUF_SIZE, HAL_MAX_DELAY);
 		xSemaphoreGive(I2CSemaphore);
 	}
     if(ret != HAL_OK){

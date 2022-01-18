@@ -37,7 +37,7 @@ SemaphoreHandle_t RPSemaphore;
 
 bool unit_oz = false;
 uint32_t tara = 0;
-uint32_t weight = 0;
+int32_t weight = 0;
 
 void app_main(void) {	I2CSemaphore = xSemaphoreCreateMutex();
 	ReglerSemaphore = xSemaphoreCreateBinary();
@@ -96,24 +96,27 @@ static void MainTask(__attribute__ ((unused)) void *pvParameters) {
 		if (xSemaphoreTake(DisplaySemaphore,
 				MAX_DELAY_DISPLAY_SEMAPHORE) == pdTRUE) {
 
+			//Read values and calculate weight
 			current = readCurrent();
 			temp = readTemp();
 			calc_weight(current_average(current));
 
+			//Warn user by overheat
 			if(temp > MAX_TEMP_VALUE){
 				oled_printf(3, Black, "Remove weight");
 				oled_printf(4, Black, "Overheat!");
 			}
 
+			//Print weight in the selected unit
 			if (unit_oz) {
-				static int32_t ounce = 0;
-				ounce = ((int32_t) weight - tara) * CONVERSION_GR_OZ;
-				snprintf(text, sizeof(text), "%0.3doz", (int) ounce);
+				static float ounce = 0;
+				ounce = ((float)weight - (float)tara) * CONVERSION_GR_OZ;
+				snprintf(text, sizeof(text), "%0.3doz ", (int)ounce);
 			} else {
-				snprintf(text, sizeof(text), "%0.4dg", (int) (weight - tara));
+				snprintf(text, sizeof(text), "%0.4dg ", (int)(weight - tara));
 			}
-
 			oled_print_weight(Black, text);
+
 			xSemaphoreGive(RPSemaphore);
 			HAL_Delay(DISPLAY_REFRESH_TIMEOUT);
 		}
@@ -126,15 +129,27 @@ static void MainTask(__attribute__ ((unused)) void *pvParameters) {
 static void I2C2Task(__attribute__ ((unused)) void *pvParameters) {
 	//Write to RP over I2C2
 	extern I2C_HandleTypeDef hi2c2;
-	uint8_t cnt = 0;
-	char s[100];
+	char s[200];
+	uint32_t buf[RP_BUF_SIZE] = {0, 0, 0, 0, 0, 0, 0};
 	while (1) {
 		if (xSemaphoreTake(RPSemaphore,
-				MAX_DELAY_RP_SEMAPHORE) == pdTRUE) {
+			MAX_DELAY_RP_SEMAPHORE) == pdTRUE) {
+			// Generate data buffer
+			 buf[0] = weight-tara;
+			 buf[1] = (uint32_t)piregler.kp;
+			 buf[2] = (uint32_t)piregler.ki;
+			 buf[3] = (uint32_t)piregler.low;
+			 buf[4] = (uint32_t)piregler.high;
+			 buf[5] = (uint32_t)piregler.ts;
+			 buf[6] = (uint32_t)piregler.idlevalue;
+
+			 // Write data buffer
+			 HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, buf, sizeof(buf), HAL_MAX_DELAY);
+
 			//data send in the follow order; weight,KP,KI ,LOW ,HIGH, TS, IdleValue
-			snprintf(s, sizeof(s),"%d,%d,%d,%d,%d,%d,%d",weight,piregler.kp,piregler.ki,piregler.low,piregler.high,piregler.ts, piregler.idlevalue);
-			HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &s, sizeof(s),
-					HAL_MAX_DELAY);
+			//snprintf(s, sizeof(s),"%d,%d,%d,%d,%d,%d,%d",(int)weight,(int)piregler.kp,(int)piregler.ki,(int)piregler.low,(int)piregler.high,(int)piregler.ts, (int)piregler.idlevalue);
+			//HAL_I2C_Master_Transmit(&hi2c2, RPZERO_ADDR, &s, sizeof(s),
+			//	HAL_MAX_DELAY);
 		}
 	}
 }
@@ -185,8 +200,8 @@ static uint32_t readCurrent(void) {
 	uint32_t current = HAL_ADC_GetValue(&hadc);
 	HAL_ADC_Stop(&hadc);
 	//Calculate the current trough the Magnet in [mA]
+	current = current ^ 0b11; //suppress toggle
 	current = (COVERTION_A_TO_MA * (float) current) / ADC_MAX_VALUE;
-	current = current ^ 0b11;
 	return (current);
 }
 
@@ -200,8 +215,7 @@ static uint32_t readTemp(void) {
 	uint32_t temp = HAL_ADC_GetValue(&hadc);
 	temp = HAL_ADC_GetValue(&hadc);
 	HAL_ADC_Stop(&hadc);
-	temp = temp ^ 0b11;
-	//temp = (COVERTION_A_TO_MA * (float) temp) / ADC_MAX_VALUE;
+	temp = temp ^ 0b11; //suppress toggle
 	return (temp);
 }
 
@@ -214,23 +228,32 @@ static void calc_weight(uint16_t current) {
 	//static const float a2 = 0.00249554;
 	//static const float a3 = -0.000001443;
 	//weight = a0+(current*a1)+((uint32_t)current*current)*a2+((uint32_t)current*current*current)*a3;
+
+	//Gewicht
 	static const float a1 = 0.328283;
 	static const float a2 = 0.00115748;
 	static const float a3 = -0.00000018519;
-	weight = +(current*a1)+((uint32_t)current*current)*a2+((uint32_t)current*current*current)*a3;
+	weight = (current*a1)+((uint32_t)current*current)*a2+((uint32_t)current*current*current)*a3;
+
+	//Korrekturfaktor
+	static const float m = 1.05524;
+	static const float b = -21.7452;
+	weight = m*((float)(weight))+b;
 }
 
+/*
+ * Function to calculate average of last three data point from the current
+ */
 static uint32_t current_average(uint32_t current){
 	static uint32_t n = 0;
-	static const uint16_t num_sample = 3;
-	static uint32_t sample_current[3] = {0,0,0};
+	static uint32_t sample_current[NUM_AVERAGE_SAMPLES];
 	uint32_t avg_current = 0;
 	sample_current[n] = current;
-	if(++n == num_sample){
+	if(++n == NUM_AVERAGE_SAMPLES){
 		n = 0;
 	}
-	for(int i = 0; i < num_sample; i++){
+	for(int i = 0; i < NUM_AVERAGE_SAMPLES; i++){
 		avg_current += sample_current[i];
 	}
-	return(avg_current/num_sample);
+	return(avg_current/NUM_AVERAGE_SAMPLES);
 }
