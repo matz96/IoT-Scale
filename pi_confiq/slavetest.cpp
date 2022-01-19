@@ -6,7 +6,14 @@
 #include <cstring>
 
 using namespace std;
- char *path;
+const char *path0 = "/var/www/html/pro3e/webinterface/files/weight.txt";
+const char *path1 = "/var/www/html/pro3e/webinterface/files/KP.txt";
+const char *path2 = "/var/www/html/pro3e/webinterface/files/KI.txt";
+const char *path3 = "/var/www/html/pro3e/webinterface/files/LOW.txt";
+const char *path4 = "/var/www/html/pro3e/webinterface/files/HIGH.txt";
+const char *path5 = "/var/www/html/pro3e/webinterface/files/TS.txt";
+const char *path6 = "/var/www/html/pro3e/webinterface/files/IdleValue.txt";
+
 void runSlave();
 //void closeSlave();
 int getControlBits(int, bool);
@@ -49,48 +56,62 @@ int32_t addup(int i)
         break;
     default:
         break;
-    
     }
     return 0;
 }
-void sel_path(int cnt)
+void sel_path(int cnt,int32_t k)
 {
     switch (cnt)
     {
     case 0:
-     *path = "/var/www/html/pro3e/webinterface/files/weight.txt";
+        ofstream MyFile;
+        MyFile.open(path0, ios::out | ios::trunc);
+        MyFile << k;
+        MyFile.close();
         break;
     case 1:
-        *path = "/var/www/html/pro3e/webinterface/files/KP.txt";
+        ofstream MyFile;
+        MyFile.open(path1, ios::out | ios::trunc);
+        MyFile << k;
+        MyFile.close();
         break;
     case 2:
-        *path = "/var/www/html/pro3e/webinterface/files/KI.txt";
+        ofstream MyFile;
+        MyFile.open(path2, ios::out | ios::trunc);
+        MyFile << k;
+        MyFile.close();
         break;
     case 3:
-        *path = "/var/www/html/pro3e/webinterface/files/LOW.txt";
+        ofstream MyFile;
+        MyFile.open(path3, ios::out | ios::trunc);
+        MyFile << k;
+        MyFile.close();
         break;
     case 4:
-        *path = "/var/www/html/pro3e/webinterface/files/HIGH.txt";
+        ofstream MyFile;
+        MyFile.open(path5, ios::out | ios::trunc);
+        MyFile << k;
+        MyFile.close();
         break;
     case 5:
-        *path = "/var/www/html/pro3e/webinterface/files/TS.txt";
+        ofstream MyFile;
+        MyFile.open(path5, ios::out | ios::trunc);
+        MyFile << k;
+        MyFile.close();
+
         break;
     case 6:
-      *path = "/var/www/html/pro3e/webinterface/files/IdleValue.txt";
+        ofstream MyFile;
+        MyFile.open(path6, ios::out | ios::trunc);
+        MyFile << k;
+        MyFile.close();
+
         break;
 
     default:
         break;
     }
 }
-void output(int32_t k)
-{
-    ofstream MyFile;
-    MyFile.open(path, ios::out | ios::trunc);
-    MyFile << k;
-    MyFile.close();
-}
-
 void runSlave()
 {
     gpioInitialise();
@@ -122,9 +143,9 @@ void runSlave()
                     i++;
                     if (i % 4 == 0)
                     {
-                        int32_t k = 0;
-                        sel_path(cnt);
-                        output(k);
+                      
+                        output(cnt,k);
+                        k = 0;
                         cnt++;
                     }
 
