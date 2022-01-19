@@ -61,47 +61,48 @@ int32_t addup(int i)
 }
 void sel_path(int cnt,int32_t k)
 {
+    ofstream MyFile;
     switch (cnt)
     {
     case 0:
-        ofstream MyFile;
+        
         MyFile.open(path0, ios::out | ios::trunc);
         MyFile << k;
         MyFile.close();
         break;
     case 1:
-        ofstream MyFile;
+        //ofstream MyFile;
         MyFile.open(path1, ios::out | ios::trunc);
         MyFile << k;
         MyFile.close();
         break;
     case 2:
-        ofstream MyFile;
+        //ofstream MyFile;
         MyFile.open(path2, ios::out | ios::trunc);
         MyFile << k;
         MyFile.close();
         break;
     case 3:
-        ofstream MyFile;
+       // ofstream MyFile;
         MyFile.open(path3, ios::out | ios::trunc);
         MyFile << k;
         MyFile.close();
         break;
     case 4:
-        ofstream MyFile;
+        //ofstream MyFile;
         MyFile.open(path5, ios::out | ios::trunc);
         MyFile << k;
         MyFile.close();
         break;
     case 5:
-        ofstream MyFile;
+        //ofstream MyFile;
         MyFile.open(path5, ios::out | ios::trunc);
         MyFile << k;
         MyFile.close();
 
         break;
     case 6:
-        ofstream MyFile;
+       // ofstream MyFile;
         MyFile.open(path6, ios::out | ios::trunc);
         MyFile << k;
         MyFile.close();
