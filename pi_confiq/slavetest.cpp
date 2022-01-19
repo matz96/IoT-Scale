@@ -6,7 +6,7 @@
 #include <cstring>
 
 using namespace std;
-const char *path;
+ char *path;
 void runSlave();
 //void closeSlave();
 int getControlBits(int, bool);
