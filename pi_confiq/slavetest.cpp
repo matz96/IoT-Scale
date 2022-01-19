@@ -6,7 +6,7 @@
 #include <cstring>
 
 using namespace std;
-char path;
+char *path;
 void runSlave();
 //void closeSlave();
 int getControlBits(int, bool);
@@ -58,25 +58,25 @@ void sel_path(int cnt)
     switch (cnt)
     {
     case 0:
-        path = "/var/www/html/pro3e/webinterface/files/weight.txt";
+        *path = "/var/www/html/pro3e/webinterface/files/weight.txt";
         break;
     case 1:
-        path = "/var/www/html/pro3e/webinterface/files/KP.txt";
+        *path = "/var/www/html/pro3e/webinterface/files/KP.txt";
         break;
     case 2:
-        path = "/var/www/html/pro3e/webinterface/files/KI.txt";
+        *path = "/var/www/html/pro3e/webinterface/files/KI.txt";
         break;
     case 3:
-        path = "/var/www/html/pro3e/webinterface/files/LOW.txt";
+        *path = "/var/www/html/pro3e/webinterface/files/LOW.txt";
         break;
     case 4:
-        path = "/var/www/html/pro3e/webinterface/files/HIGH.txt";
+        *path = "/var/www/html/pro3e/webinterface/files/HIGH.txt";
         break;
     case 5:
-        path = "/var/www/html/pro3e/webinterface/files/TS.txt";
+        *path = "/var/www/html/pro3e/webinterface/files/TS.txt";
         break;
     case 6:
-        path = "/var/www/html/pro3e/webinterface/files/IdleValue.txt";
+        *path = "/var/www/html/pro3e/webinterface/files/IdleValue.txt";
         break;
 
     default:
