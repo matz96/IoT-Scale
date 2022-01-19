@@ -3,9 +3,10 @@
 #include <fstream>
 #include <stdlib.h>
 #include <time.h>
+#include <cstring>
 
 using namespace std;
-//char *path ;
+char path[80];
 void runSlave();
 //void closeSlave();
 int getControlBits(int, bool);
@@ -55,25 +56,25 @@ void sel_path(int cnt)
     switch (cnt)
     {
     case 0:
-        char *path = "/var/www/html/pro3e/webinterface/files/weight.txt";
+        path = "/var/www/html/pro3e/webinterface/files/weight.txt";
         break;
     case 1:
-        //char *path = "/var/www/html/pro3e/webinterface/files/KP.txt";
+        path = "/var/www/html/pro3e/webinterface/files/KP.txt";
         break;
     case 2:
-        char *path = "/var/www/html/pro3e/webinterface/files/KI.txt";
+        path = "/var/www/html/pro3e/webinterface/files/KI.txt";
         break;
     case 3:
-        char *path = "/var/www/html/pro3e/webinterface/files/LOW.txt";
+        path = "/var/www/html/pro3e/webinterface/files/LOW.txt";
         break;
     case 4:
-        char *path = "/var/www/html/pro3e/webinterface/files/HIGH.txt";
+        path = "/var/www/html/pro3e/webinterface/files/HIGH.txt";
         break;
     case 5:
-        char *path = "/var/www/html/pro3e/webinterface/files/TS.txt";
+        path = "/var/www/html/pro3e/webinterface/files/TS.txt";
         break;
     case 6:
-        char *path = "/var/www/html/pro3e/webinterface/files/IdleValue.txt";
+        path = "/var/www/html/pro3e/webinterface/files/IdleValue.txt";
         break;
 
     default:
