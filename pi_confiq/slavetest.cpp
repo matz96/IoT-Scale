@@ -6,7 +6,7 @@
 #include <cstring>
 
 using namespace std;
-char path[80];
+char path;
 void runSlave();
 //void closeSlave();
 int getControlBits(int, bool);
@@ -49,7 +49,9 @@ int32_t addup(int i)
         break;
     default:
         break;
+    
     }
+    return 0;
 }
 void sel_path(int cnt)
 {
