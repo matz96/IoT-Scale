@@ -197,12 +197,6 @@ static uint32_t readTemp(void) {
  * Calculation weight
  */
 static void calc_weight(uint16_t current) {
-	//static const float a0 = 3;
-	//static const float a1 = 0.259086;
-	//static const float a2 = 0.00249554;
-	//static const float a3 = -0.000001443;
-	//weight = a0+(current*a1)+((uint32_t)current*current)*a2+((uint32_t)current*current*current)*a3;
-
 	//Gewicht
 	static const float a1 = 0.328283;
 	static const float a2 = 0.00115748;
