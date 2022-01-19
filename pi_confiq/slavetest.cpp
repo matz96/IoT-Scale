@@ -5,7 +5,7 @@
 #include <time.h>
 
 using namespace std;
-char *path = "/var/www/html/pro3e/webinterface/files/weight.txt";
+char *path ;
 void runSlave();
 //void closeSlave();
 int getControlBits(int, bool);
@@ -22,67 +22,69 @@ int main()
     return 0;
 }
 
-int32_t addup (int i){
-    int32_t k,j;
-                    switch (i%4)
-                    {
-                    case 0:
-                        k = xfer.rxBuf[i];
-                        k << 24;
-                        break;
-                    case 1:
-                        j = xfer.rxBuf[i];
-                        j << 16;
-                        k+=j;
-                        break;
-                    case 2:
-                        j = xfer.rxBuf[i];
-                        j << 8;
-                        k+=j;
-                        break;
-                    case 3:
-                        j = xfer.rxBuf[i];
-                        k+=j;
-                        break;
-                    default:
-                        break;
-                    }
-}
-void path(int cnt){
-switch (cnt)
+int32_t addup(int i)
 {
-case 0:
-   char *path = "/var/www/html/pro3e/webinterface/files/weight.txt";
-    break;
-case 1:
-   char *path = "/var/www/html/pro3e/webinterface/files/KP.txt";
-    break;
-case 2:
-   char *path = "/var/www/html/pro3e/webinterface/files/KI.txt";
-    break;
-case 3:
-   char *path = "/var/www/html/pro3e/webinterface/files/LOW.txt";
-    break;
-case 4:
-   char *path = "/var/www/html/pro3e/webinterface/files/HIGH.txt";
-    break;
-case 5:
-   char *path = "/var/www/html/pro3e/webinterface/files/TS.txt";
-    break;
-case 6:
-   char *path = "/var/www/html/pro3e/webinterface/files/IdleValue.txt";
-    break;
-
-default:
-    break;
+    int32_t k, j;
+    switch (i % 4)
+    {
+    case 0:
+        k = xfer.rxBuf[i];
+        k << 24;
+        break;
+    case 1:
+        j = xfer.rxBuf[i];
+        j << 16;
+        k += j;
+        break;
+    case 2:
+        j = xfer.rxBuf[i];
+        j << 8;
+        k += j;
+        break;
+    case 3:
+        j = xfer.rxBuf[i];
+        k += j;
+        break;
+    default:
+        break;
+    }
 }
+void sel_path(int cnt)
+{
+    switch (cnt)
+    {
+    case 0:
+        char *path = "/var/www/html/pro3e/webinterface/files/weight.txt";
+        break;
+    case 1:
+        char *path = "/var/www/html/pro3e/webinterface/files/KP.txt";
+        break;
+    case 2:
+        char *path = "/var/www/html/pro3e/webinterface/files/KI.txt";
+        break;
+    case 3:
+        char *path = "/var/www/html/pro3e/webinterface/files/LOW.txt";
+        break;
+    case 4:
+        char *path = "/var/www/html/pro3e/webinterface/files/HIGH.txt";
+        break;
+    case 5:
+        char *path = "/var/www/html/pro3e/webinterface/files/TS.txt";
+        break;
+    case 6:
+        char *path = "/var/www/html/pro3e/webinterface/files/IdleValue.txt";
+        break;
 
+    default:
+        break;
+    }
 }
-void output(int32_t k){
- ofstream MyFile;
- MyFile.open(path, ios::out | ios::trunc);
- MyFile << k; 
- MyFile.close();
+void output(int32_t k)
+{
+    ofstream MyFile;
+    MyFile.open(path, ios::out | ios::trunc);
+    MyFile << k;
+    MyFile.close();
 }
 
 void runSlave()
@@ -106,30 +108,26 @@ void runSlave()
             if (xfer.rxCnt > 0)
             {
                 cout << "Received " << xfer.rxCnt << " bytes: ";
-               
-                int cnt= 0;
-                for (int i = 0; i < (xfer.rxCnt-1); )
-                { int32_t k=0; 
-                    
-                    k+=addup(i);
+
+                int cnt = 0;
+                for (int i = 0; i < (xfer.rxCnt - 1);)
+                {
+                    int32_t k = 0;
+
+                    k += addup(i);
                     i++;
-                    if(i%4=0){
-                       int32_t k=0;
-                       path(cnt);
-                       output(k);
+                    if (i % 4 == 0)
+                    {
+                        int32_t k = 0;
+                        sel_path(cnt);
+                        output(k);
                         cnt++;
-                   }
+                    }
 
-                   
-                  
-
-
-                   // MyFile << (int) xfer.rxBuf[i];
+                    // MyFile << (int) xfer.rxBuf[i];
                     cout << xfer.rxBuf[i]; //used for testing
-                    
                 }
 
-                
                 cout << "\n";
             }
             // sleep(2000);
