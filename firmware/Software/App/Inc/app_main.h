@@ -40,7 +40,7 @@
 #define PWM_START_VALUE (PWM_MAX_VAL/5)
 #define DISTANCE_SCALER 3
 
-#define MAX_TEMP_VALUE 1400
+#define MAX_TEMP_VALUE 1450
 
 void app_main(void);
 
