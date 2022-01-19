@@ -59,7 +59,7 @@ int32_t addup(int i)
     }
     return 0;
 }
-void sel_path(int cnt,int32_t k)
+void output(int cnt,int32_t k)
 {
     ofstream MyFile;
     switch (cnt)
