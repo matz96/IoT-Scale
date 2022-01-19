@@ -32,26 +32,25 @@ int main()
 
 int32_t addup(int i)
 {
-    int32_t j;
+    int32_t j=xfer.rxBuf[i];
     switch (i % 4)
     {
     case 0:
-        j = xfer.rxBuf[i];
+        
         j << 24;
         return j;
         break;
     case 1:
-        j = xfer.rxBuf[i];
+       
         j << 16;
         return j;
         break;
     case 2:
-        j = xfer.rxBuf[i];
+        
         j << 8;
         return j;
         break;
     case 3:
-        j = xfer.rxBuf[i];
         return j;
         break;
     default:
@@ -59,6 +58,7 @@ int32_t addup(int i)
     }
     return 0;
 }
+
 void output (int cnt,int32_t k)
 {
     ofstream MyFile;
@@ -113,6 +113,7 @@ void output (int cnt,int32_t k)
         break;
     }
 }
+
 void runSlave()
 {
     gpioInitialise();
@@ -136,9 +137,10 @@ void runSlave()
                 cout << "Received " << xfer.rxCnt << " bytes: ";
 
                 int cnt = 0;
+                int32_t k = 0;
                 for (int i = 0; i < (xfer.rxCnt - 1);)
                 {
-                    int32_t k = 0;
+                   
 
                     k += addup(i);
                     i++;
