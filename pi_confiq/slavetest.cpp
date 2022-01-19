@@ -5,7 +5,7 @@
 #include <time.h>
 
 using namespace std;
-char *path ;
+//char *path ;
 void runSlave();
 //void closeSlave();
 int getControlBits(int, bool);
@@ -58,7 +58,7 @@ void sel_path(int cnt)
         char *path = "/var/www/html/pro3e/webinterface/files/weight.txt";
         break;
     case 1:
-        char *path = "/var/www/html/pro3e/webinterface/files/KP.txt";
+        //char *path = "/var/www/html/pro3e/webinterface/files/KP.txt";
         break;
     case 2:
         char *path = "/var/www/html/pro3e/webinterface/files/KI.txt";
