@@ -59,7 +59,7 @@ int32_t addup(int i)
     }
     return 0;
 }
-void output(int cnt,int32_t k)
+void output (int cnt,int32_t k)
 {
     ofstream MyFile;
     switch (cnt)
@@ -148,7 +148,6 @@ void runSlave()
                         output(cnt,k);
                         k = 0;
                         cnt++;
-                        
                     }
 
                     // MyFile << (int) xfer.rxBuf[i];
