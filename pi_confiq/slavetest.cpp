@@ -148,6 +148,7 @@ void runSlave()
                         output(cnt,k);
                         k = 0;
                         cnt++;
+                        cout << "test" + i;
                     }
 
                     // MyFile << (int) xfer.rxBuf[i];
