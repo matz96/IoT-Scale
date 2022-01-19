@@ -24,26 +24,27 @@ int main()
 
 int32_t addup(int i)
 {
-    int32_t k, j;
+    int32_t j;
     switch (i % 4)
     {
     case 0:
-        k = xfer.rxBuf[i];
-        k << 24;
+        j = xfer.rxBuf[i];
+        j << 24;
+        return j;
         break;
     case 1:
         j = xfer.rxBuf[i];
         j << 16;
-        k += j;
+        return j;
         break;
     case 2:
         j = xfer.rxBuf[i];
         j << 8;
-        k += j;
+        return j;
         break;
     case 3:
         j = xfer.rxBuf[i];
-        k += j;
+        return j;
         break;
     default:
         break;
